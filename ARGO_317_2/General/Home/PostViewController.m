@@ -56,11 +56,8 @@
     //设置分隔线样式
     self.tableView.separatorStyle=UITableViewCellSeparatorStyleSingleLineEtched;
     
-
-    
     //启动loadingCell
     [loadingCell performSelector:@selector(startView) withObject:nil afterDelay:0];
-    
     
     //加载数据：
     if ([self.navigationItem.title isEqualToString:@"提醒详情"]) {
@@ -181,17 +178,8 @@
     //页数加一
     currPage++;
     
-    NSString *urlString= @"http://argo.sysu.edu.cn/ajax/post/topiclist";
-    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardname,@"filename":filename}];
-    [[AFHTTPRequestOperationManager manager] GET:urlString parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject){
-        
-        //NSLog(@"success------------------------>%@",operation.responseObject);
-        NSString *requestTmp = [NSString stringWithString:operation.responseString];
-        NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-        //系统自带JSON解析：
-        NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-        //NSLog(@"resultDict------------------>%@",resultDict);
-        
+    [[DataManager manager] getTopicListByBoard:boardname andFile:filename
+        success:^(NSDictionary *resultDict){
         int success=[[resultDict objectForKey:@"success"]intValue];
         if (success==1) {
             NSArray *data=[resultDict objectForKey:@"data"];
@@ -206,13 +194,6 @@
             //记录数据加载时间
             lastUpdated=[NSString stringWithFormat:@"上次更新时间 %@",
                          [dateFormatter stringFromDate:[NSDate date]]];
-           
-            
-            //释放掉不用的变量：
-            requestTmp=nil;
-            resData=nil;
-            data=nil;
-            
             
             //如果数目小于等于20（一页的数据），则一次请求完所有数据,否则，一次只加载前面20个postFeed先：
             if ([postTopicList count]<=20) {
@@ -221,31 +202,28 @@
                 {
                     [self fetchPostFeedWithBoardName:boardName andFileName:[postTopicList objectAtIndex:i]];
                 }
-            }else{
+            } else {
                 isAllDataFinished=NO;
                 for (int i=0; i<20; i++)
                 {
                     [self fetchPostFeedWithBoardName:boardName andFileName:[postTopicList objectAtIndex:i]];
                 }
             }
-            
-        }else{
+        } else {
             
             //设置分隔线正常
             self.tableView.separatorStyle=UITableViewCellSeparatorStyleSingleLine;
 
-            
             UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:@"请退回重新进入或者重新登录后再试试" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [av show];
             
         }
         
-    }failure:^(AFHTTPRequestOperation *operation, NSError *error){
+    }failure:^(NSString *data, NSError *error){
         
         //设置分隔线正常
         self.tableView.separatorStyle=UITableViewCellSeparatorStyleSingleLine;
 
-        
         //NSLog(@"Failure: %@", operation.error);
         UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [av show];
@@ -382,17 +360,8 @@
         //数据准备好了才能
         if (isDataReady) {
             //等待上拉刷新：
-            NSString *urlString= @"http://argo.sysu.edu.cn/ajax/post/topiclist";
-            NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
-            
-            [[AFHTTPRequestOperationManager manager] GET:urlString parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject){
-                
-                //NSLog(@"success------------------------>%@",operation.responseObject);
-                NSString *requestTmp = [NSString stringWithString:operation.responseString];
-                NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-                //系统自带JSON解析：
-                NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-                //NSLog(@"resultDict------------------>%@",resultDict);
+             [[DataManager manager] getTopicListByBoard:boardName andFile:fileName
+                success:^(NSDictionary *resultDict) {
                 NSArray *data=[resultDict objectForKey:@"data"];
                 
                 if ([data count]>[postTopicList count]) {
@@ -460,26 +429,14 @@
                     formatter=nil;
                     
                 }
-                requestTmp=nil;
-                resData=nil;
-                data=nil;
-                
-            }failure:^(AFHTTPRequestOperation *operation, NSError *error){
-                
+            }failure:^(NSString *data, NSError *error){
                 //NSLog(@"Failure: %@", operation.error);
                 UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [av show];
                 
             }];
-
         }
-        
-        
     }
-    
-    
-    
-
 }
 
 
@@ -642,13 +599,9 @@
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    
-    if(postFeeds&&[postFeeds count]){
-        
+    if(postFeeds&&[postFeeds count]) {
         return  UITableViewCellEditingStyleDelete;  //返回此值时,Cell会做出响应显示Delete按键,点击Delete后会调用下面的函数,别给传递UITableViewCellEditingStyleDelete参数
-        
     }else{
-        
         return  UITableViewCellEditingStyleNone;   //返回此值时,Cell上不会出现Delete按键,即Cell不做任何响应
     }
 }
@@ -678,23 +631,9 @@
                     
                     [loadingHud show:YES];
                     
-                    
-                    NSString *urlString=@"http://argo.sysu.edu.cn/ajax/post/del";
-                    
-                    NSDictionary *param=@{@"boardname":boardName,@"filename":postTopicList[indexPath.row]};
-                    
-                    [[AFHTTPRequestOperationManager manager] POST:urlString parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject){
-                        
-                        //NSLog(@"success------------------------>%@",operation.responseObject);
-                        NSString *requestTmp = [NSString stringWithString:operation.responseString];
-                        NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-                        //系统自带JSON解析：
-                        NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-                        //NSLog(@"resultDict------------------>%@",resultDict);
-                        
+                    [[DataManager manager] deletePostByBoard:boardName andFile:postTopicList[indexPath.row] success:^(NSDictionary *resultDict){
                         int success=[[resultDict objectForKey:@"success"]intValue];
                         if (success==1) {
-                            
                             [postFeeds removeObjectAtIndex:indexPath.row];
                             [postTopicList removeObjectAtIndex:indexPath.row];
 
@@ -707,21 +646,15 @@
                             //停留1秒后消失
                             [completedHud hide:YES afterDelay:1.0];
                             
-                        }else{
-                            
+                        } else {
                             //马上隐藏loadingHud:
                             [loadingHud hide:YES afterDelay:0];
                             
                             UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"删帖失败" message:@"稍后可再试试" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                             [av show];
                         }
-                        
-                        //释放掉已经用过的变量：
-                        requestTmp=nil;
-                        resData=nil;
-                        resultDict=nil;
-                        
-                    }failure:^(AFHTTPRequestOperation *operation, NSError *error){
+                    }failure:^(NSString *info, NSError *error){
+                        // TODO: show the info
                         //NSLog(@"Failure: %@", operation.error);
                         //马上隐藏loadingHud:
                         [loadingHud hide:YES afterDelay:0];
@@ -733,11 +666,9 @@
                     loadingHud=nil;
                     completedHud=nil;
                     
-                }else{
-                    
+                } else {
                     UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"提示" message:@"你无权删除此帖！" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                     [av show];
- 
                 }
             }else if ([Config Instance].isLogin==0){
                 UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"提示" message:@"你未登录，无权执行此操作！" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -749,8 +680,6 @@
         }
     }
 }
-
-
 
 #pragma mark - Navigation
 

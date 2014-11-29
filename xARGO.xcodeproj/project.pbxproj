@@ -121,6 +121,7 @@
 		B0ED504B19026E8B0008E5D7 /* arrowdown_black_32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = B0ED504919026E8B0008E5D7 /* arrowdown_black_32x32.png */; };
 		CD9B561F1A1F3F120083F22A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CD9B561E1A1F3F120083F22A /* main.m */; };
 		CDA8519D1A29804D00BD3C19 /* DataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA8519C1A29804D00BD3C19 /* DataManager.m */; };
+		CDA851A21A2A3FFB00BD3C19 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CDA851A01A2A3FFB00BD3C19 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -223,7 +224,6 @@
 		B0C3D86B18D6F421004B5F9F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		B0C3D86D18D6F421004B5F9F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		B0C3D87118D6F421004B5F9F /* xARGO-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "xARGO-Info.plist"; sourceTree = "<group>"; };
-		B0C3D87318D6F421004B5F9F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B0C3D87718D6F421004B5F9F /* xARGO-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "xARGO-Prefix.pch"; sourceTree = "<group>"; };
 		B0C3D87818D6F421004B5F9F /* ARGOAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARGOAppDelegate.h; sourceTree = "<group>"; };
 		B0C3D87918D6F421004B5F9F /* ARGOAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARGOAppDelegate.m; sourceTree = "<group>"; };
@@ -335,6 +335,8 @@
 		CD9B561E1A1F3F120083F22A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		CDA8519B1A29804D00BD3C19 /* DataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataManager.h; sourceTree = "<group>"; };
 		CDA8519C1A29804D00BD3C19 /* DataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataManager.m; sourceTree = "<group>"; };
+		CDA8519E1A2A3C7800BD3C19 /* Base */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CDA851A11A2A3FFB00BD3C19 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -812,17 +814,18 @@
 		CD9B56201A1F41AF0083F22A /* Localization */ = {
 			isa = PBXGroup;
 			children = (
-				CD9B56211A1F41D80083F22A /* en.lproj */,
+				CD9B56211A1F41D80083F22A /* Base.lproj */,
 			);
 			path = Localization;
 			sourceTree = "<group>";
 		};
-		CD9B56211A1F41D80083F22A /* en.lproj */ = {
+		CD9B56211A1F41D80083F22A /* Base.lproj */ = {
 			isa = PBXGroup;
 			children = (
 				B0C3D87218D6F421004B5F9F /* InfoPlist.strings */,
+				CDA851A01A2A3FFB00BD3C19 /* Localizable.strings */,
 			);
-			name = en.lproj;
+			path = Base.lproj;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -896,6 +899,7 @@
 				B0B08AFE1902164F00A43FC6 /* arrow_down1@2x.png in Resources */,
 				B07400361921213500D455E5 /* post.png in Resources */,
 				B0ED504B19026E8B0008E5D7 /* arrowdown_black_32x32.png in Resources */,
+				CDA851A21A2A3FFB00BD3C19 /* Localizable.strings in Resources */,
 				B0B08AFD1902164F00A43FC6 /* arrow_down1.png in Resources */,
 				B0B08AFF1902164F00A43FC6 /* arrow_down@2x.png in Resources */,
 				B074003F192129CF00D455E5 /* comment.png in Resources */,
@@ -1012,9 +1016,10 @@
 		B0C3D87218D6F421004B5F9F /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				B0C3D87318D6F421004B5F9F /* en */,
+				CDA8519E1A2A3C7800BD3C19 /* Base */,
 			);
 			name = InfoPlist.strings;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		B0C3D89118D6F421004B5F9F /* InfoPlist.strings */ = {
@@ -1023,6 +1028,14 @@
 				B0C3D89218D6F421004B5F9F /* en */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		CDA851A01A2A3FFB00BD3C19 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CDA851A11A2A3FFB00BD3C19 /* Base */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

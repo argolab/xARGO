@@ -1,0 +1,9 @@
+/* 
+  Localizable.strings
+  xARGO
+
+  Created by exiaomo on 29/11/14.
+  Copyright (c) 2014 490021684@qq.com. All rights reserved.
+*/
+"welcome"="Click on the screen to continue...";
+"MSG_NETWORK_FAILURE"="网络错误。如果您多次看到此提示，请尝试使用浏览器访问http://argo.sysu.edu.cn/";

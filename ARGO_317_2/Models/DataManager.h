@@ -18,5 +18,12 @@
                         success:(void (^)(NSDictionary *data))success
                         failure:(void (^)(NSString *data, NSError *error))failure;
 
+- (void)getTopicListByBoard:(NSString *) boardName andFile: (NSString *) fileName
+                    success:(void (^)(NSDictionary *resultDict))success
+                    failure:(void (^)(NSString *data, NSError *error))failure;
+
+- (void)deletePostByBoard:(NSString *) boardName andFile: (NSString *) fileName
+                  success:(void (^)(NSDictionary *resultDict))success
+                  failure:(void (^)(NSString *data, NSError *error))failure;
 
 @end

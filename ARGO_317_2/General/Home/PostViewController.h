@@ -10,7 +10,6 @@
 #import <UIKit/UIKit.h>
 #import "LoadingCell.h"
 #import "MBProgressHUD.h"
-#import "AFNetworking.h"
 
 @interface PostViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource,MBProgressHUDDelegate>
 {
