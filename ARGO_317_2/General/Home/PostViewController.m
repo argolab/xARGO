@@ -10,6 +10,7 @@
 #import "AddPostViewController.h"
 #import "UserQueryViewController.h"
 #import "AttachPictureViewController.h"
+#import "DataManager.h"
 
 //定义cell里面的tag
 #define authorTag       1
@@ -73,16 +74,9 @@
 
 -(void)fetchMessageDetail{
     [loadingCell loading];
-    NSString *urlString=@"http://argo.sysu.edu.cn/ajax/post/get";
-    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
     
-    [[AFHTTPRequestOperationManager manager] GET:urlString parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject){
-        
-        //NSLog(@"success------------------------>%@",operation.responseObject);
-        NSString *requestTmp = [NSString stringWithString:operation.responseString];
-        NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-        //系统自带JSON解析：
-        NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
+    [[DataManager manager] getPostByBoard:boardName andFile: fileName
+        success:^(NSDictionary *resultDict) {
         //NSLog(@"resultDict------------------>%@",resultDict);
         //postFeeds=[resultDict objectForKey:@"data"];
         if ([resultDict objectForKey:@"data"]) {
@@ -103,13 +97,8 @@
         formatter=nil;
         //设置分隔线正常
         self.tableView.separatorStyle=UITableViewCellSeparatorStyleSingleLine;
-        
-
         //NSLog(@"tempPostFeeds-------------->%@",tempPostFeeds);
-        requestTmp=nil;
-        resData=nil;
-        resultDict=nil;
-    }failure: ^(AFHTTPRequestOperation *operation, NSError *error){
+    }failure: ^(NSString *data, NSError *error){
         
         //设置分隔线正常
         self.tableView.separatorStyle=UITableViewCellSeparatorStyleSingleLine;
@@ -268,25 +257,13 @@
 -(void)fetchPostFeedWithBoardName:(NSString *)boardname andFileName:(NSString *)filename
 {
     [loadingCell loading];
-    NSString *urlString=@"http://argo.sysu.edu.cn/ajax/post/get";
-    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardname,@"filename":filename}];
     
-    [[AFHTTPRequestOperationManager manager] GET:urlString parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject){
-        
-        //NSLog(@"success------------------------>%@",operation.responseObject);
-        NSString *requestTmp = [NSString stringWithString:operation.responseString];
-        NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-        //系统自带JSON解析：
-        NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-        //NSLog(@"resultDict------------------>%@",resultDict);
-        
+    [[DataManager manager] getPostByBoard:boardname andFile:filename
+                success:^(NSDictionary *resultDict) {   
         if ([resultDict objectForKey:@"data"]&&[[resultDict objectForKey:@"data"]isKindOfClass:[NSDictionary class]]) {
             [tempPostFeeds addObject:[resultDict objectForKey:@"data"]];
         }
         //NSLog(@"tempPostFeeds-------------->%@",tempPostFeeds);
-        requestTmp=nil;
-        resData=nil;
-        resultDict=nil;
            
         //由于采用异步网络请求，所以加载完毕后postFeeds里面的对象顺序很可能被打乱了，当postFeeds加载完毕时，对其中的元素按发帖时间排序。
         //分所有帖子加载完了和没有加载完两种情况：
@@ -429,27 +406,12 @@
                         }
                     }
                     for (NSInteger i=[data count]-postFeedAddCount; i<[data count]; i++) {
-                        
-                        
-                        NSString *urlString=@"http://argo.sysu.edu.cn/ajax/post/get";
-                        NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":[data objectAtIndex:i]}];
-                        [[AFHTTPRequestOperationManager manager] GET:urlString parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject){
-                            
-                            //NSLog(@"success------------------------>%@",operation.responseObject);
-                            NSString *requestTmp = [NSString stringWithString:operation.responseString];
-                            NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-                            //系统自带JSON解析：
-                            NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-                            //NSLog(@"resultDict------------------>%@",resultDict);
-                            
+                        NSString *curFileName=[data objectAtIndex:i];
+                        [[DataManager manager] getPostByBoard:boardName andFile: curFileName
+                                                      success:^(NSDictionary *resultDict) {
                             if ([resultDict objectForKey:@"data"]&&[[resultDict objectForKey:@"data"]isKindOfClass:[NSDictionary class]]) {
                                 [tempPostFeeds addObject:[resultDict objectForKey:@"data"]];
                             }
-                            //NSLog(@"tempPostFeeds-------------->%@",tempPostFeeds);
-                            requestTmp=nil;
-                            resData=nil;
-                            resultDict=nil;
-                            
                             //由于采用异步网络请求，所以加载完毕后postFeeds里面的对象顺序很可能被打乱了，当postFeeds加载完毕时，对其中的元素按发帖时间排序。
                             if ([tempPostFeeds count]==postFeedAddCount) {
                                 

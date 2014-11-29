@@ -120,6 +120,7 @@
 		B0ED504A19026E8B0008E5D7 /* arrow_down_black_16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = B0ED504819026E8B0008E5D7 /* arrow_down_black_16x16.png */; };
 		B0ED504B19026E8B0008E5D7 /* arrowdown_black_32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = B0ED504919026E8B0008E5D7 /* arrowdown_black_32x32.png */; };
 		CD9B561F1A1F3F120083F22A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CD9B561E1A1F3F120083F22A /* main.m */; };
+		CDA8519D1A29804D00BD3C19 /* DataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA8519C1A29804D00BD3C19 /* DataManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -332,6 +333,8 @@
 		B0ED504819026E8B0008E5D7 /* arrow_down_black_16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_down_black_16x16.png; sourceTree = "<group>"; };
 		B0ED504919026E8B0008E5D7 /* arrowdown_black_32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrowdown_black_32x32.png; sourceTree = "<group>"; };
 		CD9B561E1A1F3F120083F22A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		CDA8519B1A29804D00BD3C19 /* DataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataManager.h; sourceTree = "<group>"; };
+		CDA8519C1A29804D00BD3C19 /* DataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -750,6 +753,8 @@
 				B0E59F7218ED57EA00FC844D /* Config.m */,
 				B005E0921907969400CD8D88 /* DataCache.h */,
 				B005E0931907969400CD8D88 /* DataCache.m */,
+				CDA8519B1A29804D00BD3C19 /* DataManager.h */,
+				CDA8519C1A29804D00BD3C19 /* DataManager.m */,
 				B0E59F7A18ED5B1D00FC844D /* Post.h */,
 				B0E59F7B18ED5B1D00FC844D /* Post.m */,
 				B0E59F7418ED587B00FC844D /* SoftwareCatalog.h */,
@@ -978,6 +983,7 @@
 				B00E8ECE18FA147400FB150D /* AddPostViewController.m in Sources */,
 				B0C3D8B818D6F4C7004B5F9F /* MEMenuViewController.m in Sources */,
 				B0CD013019F92C2A00F46F32 /* AFNetworkReachabilityManager.m in Sources */,
+				CDA8519D1A29804D00BD3C19 /* DataManager.m in Sources */,
 				B0C3D8CA18D731B7004B5F9F /* AllBoardsListNavViewController.m in Sources */,
 				B004D4AD19149E390023667A /* UIButton+WebCache.m in Sources */,
 				B0CD013519F92C2A00F46F32 /* AFURLSessionManager.m in Sources */,
