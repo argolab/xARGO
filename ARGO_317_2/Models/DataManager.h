@@ -14,6 +14,13 @@
 
 + (DataManager *) manager;
 
+- (void)getAllSections:(void (^)(NSDictionary *resultDict)) success
+               failure:(void (^)(NSString *data, NSError *error)) failure;
+
+- (void)getBoardsBySection:(NSString *)secCode
+               success:(void (^)(NSDictionary *data))success
+               failure:(void (^)(NSString *data, NSError *error))failure;
+
 - (void)getPostByBoard:(NSString *)boardName andFile:(NSString *)fileName
                         success:(void (^)(NSDictionary *data))success
                         failure:(void (^)(NSString *data, NSError *error))failure;

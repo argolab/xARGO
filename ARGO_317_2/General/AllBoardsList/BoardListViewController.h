@@ -15,6 +15,7 @@
 }
 
 @property (nonatomic, strong) NSArray *boards;
+@property (nonatomic, strong) NSDictionary *sectionDict;
 
 
 

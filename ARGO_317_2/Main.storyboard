@@ -671,8 +671,8 @@
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="postTitle" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="295" translatesAutoresizingMaskIntoConstraints="NO" id="fp0-Ov-dRb">
-                                                    <rect key="frame" x="20" y="6" width="295" height="17"/>
+                                                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="postTitle" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="295" translatesAutoresizingMaskIntoConstraints="NO" id="fp0-Ov-dRb">
+                                                    <rect key="frame" x="20" y="6" width="228" height="17"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="295" id="w5s-yc-Ryq"/>
                                                     </constraints>
@@ -681,7 +681,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="owner" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9tY-8y-rmw">
-                                                    <rect key="frame" x="20" y="32" width="115" height="15"/>
+                                                    <rect key="frame" x="20" y="33" width="115" height="14.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="115" id="k0b-KA-iGj"/>
                                                     </constraints>
@@ -689,7 +689,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="updateTime" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rKQ-rb-2Ez">
-                                                    <rect key="frame" x="155" y="32" width="160" height="15"/>
+                                                    <rect key="frame" x="155" y="33" width="160" height="14.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="160" id="fH7-Oe-DJR"/>
                                                     </constraints>
@@ -765,7 +765,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="boardListCell" rowHeight="50" id="E3j-O4-cco">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="boardListCell" rowHeight="50" id="E3j-O4-cco" customClass="TDBadgedCell">
                                 <rect key="frame" x="0.0" y="86" width="320" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="E3j-O4-cco" id="NrL-uS-599">
@@ -1140,6 +1140,10 @@
                                         <constraint firstItem="tsL-f7-e0W" firstAttribute="top" secondItem="KCx-FI-GJg" secondAttribute="top" constant="5" id="lq9-KU-NEa"/>
                                     </constraints>
                                 </tableViewCellContentView>
+                                <accessibility key="accessibilityConfiguration" hint="me" label="test">
+                                    <accessibilityTraits key="traits" none="YES" button="YES" link="YES" image="YES" selected="YES" playsSound="YES" keyboardKey="YES" summaryElement="YES" searchField="YES"/>
+                                    <bool key="isElement" value="YES"/>
+                                </accessibility>
                                 <connections>
                                     <segue destination="lf9-Xw-C6I" kind="push" identifier="showPostFromHomeView" id="759-fz-ZUW"/>
                                 </connections>
@@ -1573,10 +1577,10 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
+        <segue reference="EYj-UX-AS2"/>
         <segue reference="22l-MZ-9b5"/>
-        <segue reference="Rx4-sj-KNY"/>
-        <segue reference="iuh-cI-1y9"/>
-        <segue reference="LJV-ft-H5N"/>
-        <segue reference="TLO-Iv-2pY"/>
+        <segue reference="O0L-GN-udV"/>
+        <segue reference="owN-Hs-TkM"/>
+        <segue reference="63l-aH-bEP"/>
     </inferredMetricsTieBreakers>
 </document>

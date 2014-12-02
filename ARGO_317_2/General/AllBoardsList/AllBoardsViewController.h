@@ -13,15 +13,11 @@
 
 @interface AllBoardsViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource>
 {
-    NSMutableArray *sectionNames;
-    NSMutableArray *allBoards;
     LoadingCell *loadingCell;
-    NSArray *all;
+    NSArray *sections;
 }
 
 
 -(void)loadData;
--(void)fetchServerData;
-
 
 @end

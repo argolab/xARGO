@@ -88,13 +88,6 @@
         SINavigationMenuView *menu = [[SINavigationMenuView alloc] initWithFrame:frame title:boardTitle];
         
         [menu displayMenuInView:self.view];
-        /*
-        UIView *containerView=[[UIView alloc]initWithFrame:CGRectMake(0.0,30,320,10000)];
-        //[self.view insertSubview:containerView aboveSubview:self._tableView];
-        [self.view insertSubview:containerView belowSubview:self._tableView];
-        //[self.view addSubview:containerView];
-        [menu displayMenuInView:containerView];
-         */
         menu.items = @[@"收藏本版",@"取消收藏"];
         menu.delegate = self;
         self.navigationItem.titleView = menu;

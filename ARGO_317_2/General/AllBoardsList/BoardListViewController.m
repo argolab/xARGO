@@ -8,6 +8,8 @@
 
 #import "BoardListViewController.h"
 #import "PostListViewController.h"
+#import "DataManager.h"
+#import "TDBadgedCell.h"
 
 @interface BoardListViewController ()
 
@@ -28,13 +30,19 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    //NSLog(@"boards-------------->%@",boards);
-    
+    // Load sections. TODO: use pull&refresh pattern here as loading is asynch.
+    if (self.sectionDict) {
+        NSString *seccode=[self.sectionDict objectForKey:@"seccode"];
+        [[DataManager manager] getBoardsBySection:seccode success:^(NSDictionary *data){
+            // Sorted by english name, i.e. the field of filename.
+            self.boards=[[data objectForKey:@"data"] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+                return [[obj1 objectForKey:@"filename"] caseInsensitiveCompare:[obj2 objectForKey:@"filename"]];
+            }];
+        } failure: ^(NSString *data, NSError *error){
+            //TODO: handle error.
+        }];
+    }
 }
-
-
-
 
 - (void)didReceiveMemoryWarning
 {
@@ -49,24 +57,30 @@
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"boardListCell"];
-    if (cell == nil)
-    {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"boardListCell"];
+    TDBadgedCell *cell = (TDBadgedCell *)[tableView dequeueReusableCellWithIdentifier:@"boardListCell"];
+    if (cell == nil) {
+        cell = [[TDBadgedCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"boardListCell"];
     }
-    
+
     NSString *titleStr=@"loading..";
     NSString *total_todayStr=@"loading..";
     NSString *str_BM=@"loading..";
     
-    if (boards&&[boards count]) {
+    if (boards && [boards count]) {
+        NSDictionary *curBoard=[boards objectAtIndex:indexPath.row];
         
-        titleStr=[NSString stringWithFormat:@"%@（%@）",[[boards objectAtIndex:indexPath.row]objectForKey:@"title"],[[boards objectAtIndex:indexPath.row]objectForKey:@"boardname"]];
+        titleStr=[NSString stringWithFormat:@"%@（%@）",[curBoard objectForKey:@"title"],[curBoard objectForKey:@"filename"]];
         
-        total_todayStr=[NSString stringWithFormat:@"%@",[[boards objectAtIndex:indexPath.row]objectForKey:@"total_today"]];
+        total_todayStr=[NSString stringWithFormat:@"%@",[curBoard objectForKey:@"total_today"]];
         
         //这里的BM类型是字符串类型，而收藏那里取出来的是数组，要注意区分
-        str_BM=[NSString stringWithFormat:@"%@",[[boards objectAtIndex:indexPath.row]objectForKey:@"BM"]];
+        //改为用sec api获取数据时这里的BM也是数组了
+        NSArray *array = [curBoard objectForKey:@"BM"];
+        str_BM = (array&&array.count>0)? array[0]:@"暂无版主";
+
+        NSString *unreadFlag = [curBoard objectForKey:@"unread"];
+        cell.badgeString = [curBoard objectForKey:@"total"];
+        cell.badgeColor = (unreadFlag && unreadFlag.length >0)?[UIColor colorWithRed:0 green:0.478 blue:1 alpha:1.0] :[UIColor grayColor];
     }
     
     ((UILabel *)[cell.contentView viewWithTag:1]).text=titleStr;
@@ -83,7 +97,6 @@
     return cell;
 }
 
-
 #pragma mark - Navigation
 //传递数据（boardname)至帖子列表
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -92,11 +105,10 @@
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         //传递参数
         PostListViewController *destViewController = segue.destinationViewController;
-        destViewController.boardName=[[boards objectAtIndex:indexPath.row]objectForKey:@"boardname"];
-        //destViewController.total_topicNum=[[boards[indexPath.row]objectForKey:@"total_topic"]integerValue];
+        destViewController.boardName=[[boards objectAtIndex:indexPath.row]objectForKey:@"filename"];
+
         destViewController.boardTitle=[NSString stringWithFormat:@"%@",[boards[indexPath.row]objectForKey:@"title"]];
 
-        
         destViewController=nil;//important!否则如果持续使用会导致内存被塞满
         indexPath=nil;
     }

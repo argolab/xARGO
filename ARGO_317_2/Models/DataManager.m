@@ -11,9 +11,15 @@
 @implementation DataManager
 
 NSString * const ARGO_BASE_URL              = @"http://argo.sysu.edu.cn/ajax/";
+
 NSString * const ARGO_POST_GET_URL          = @"http://argo.sysu.edu.cn/ajax/post/get";
 NSString * const ARGO_POST_TOPICLIST_URL    = @"http://argo.sysu.edu.cn/ajax/post/topiclist";
 NSString * const ARGO_POST_DELETE_URL       = @"http://argo.sysu.edu.cn/ajax/post/del";
+
+NSString * const ARGO_SECTIONS_URL          = @"http://argo.sysu.edu.cn/ajax/section/";
+
+NSString * const ARGO_BOARDS_GET_BY_SECTION_URL       = @"http://argo.sysu.edu.cn/ajax/board/getbysec";
+
 
 NSString * const MSG_NETWORK_FAILURE        = @"MSG_NETWORK_FAILURE";
 
@@ -28,43 +34,74 @@ DataManager *manager;
 }
 
 #pragma mark -
-
-- (void)getPostByBoard:(NSString *) boardName andFile: (NSString *) fileName
-                                   success:(void (^)(NSDictionary *resultDict))success
-                                   failure:(void (^)(NSString *data, NSError *error))failure; {
-    NSString *cacheKey=[boardName stringByAppendingString:fileName];
+// Should only be used internally
+- (void)getData:(NSString*) url
+              withParam:(NSDictionary*) param
+           withCacheKey:(NSString*) cacheKey
+                success:(void (^)(NSDictionary *resultDict))success
+                failure:(void (^)(NSString *data, NSError *error))failure; {
     NSDictionary *resultInCache = [self.postCache objectForKey:cacheKey];
     if (resultInCache) {
         // NSLog(@"Cache hit!");
         success(resultInCache);
         return;
     }
-
-    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
-    [[AFHTTPRequestOperationManager manager] GET:ARGO_POST_GET_URL parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSDictionary *resultDict = responseObject;
-        [self.postCache setObject:resultDict forKey:cacheKey];
-        success(resultDict);
+    
+    [[AFHTTPRequestOperationManager manager] GET:url parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [self.postCache setObject:responseObject forKey:cacheKey];
+        success(responseObject);
     } failure: ^(AFHTTPRequestOperation *operation, NSError *error) {
         failure(NSLocalizedString(MSG_NETWORK_FAILURE, MSG_NETWORK_FAILURE_KEY),error);
     }];
 }
 
-- (void)getTopicListByBoard:(NSString *) boardName andFile: (NSString *) fileName
-               success:(void (^)(NSDictionary *resultDict))success
-               failure:(void (^)(NSString *data, NSError *error))failure; {
-    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
-    [[AFHTTPRequestOperationManager manager] GET:ARGO_POST_TOPICLIST_URL parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSDictionary *resultDict = responseObject;
-        success(resultDict);
+// Should only be used internally
+- (void)getData:(NSString*) url
+              withParam:(NSDictionary*) param
+                success:(void (^)(NSDictionary *resultDict))success
+                failure:(void (^)(NSString *data, NSError *error))failure; {
+    [[AFHTTPRequestOperationManager manager] GET:url parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        success(responseObject);
     } failure: ^(AFHTTPRequestOperation *operation, NSError *error) {
         failure(NSLocalizedString(MSG_NETWORK_FAILURE, MSG_NETWORK_FAILURE_KEY),error);
     }];
 }
 
-- (void)deletePostByBoard:(NSString *) boardName andFile: (NSString *) fileName
+- (void)getAllSections:(void (^)(NSDictionary *resultDict)) success
+               failure:(void (^)(NSString *data, NSError *error)) failure; {
+    NSString *cacheKey = @"allSection";
+    [self getData:ARGO_SECTIONS_URL withParam:nil withCacheKey:cacheKey success:success failure:failure];
+}
+
+- (void)getBoardsBySection:(NSString *) secCode
+                   success:(void (^)(NSDictionary *resultDict))success
+                   failure:(void (^)(NSString *data, NSError *error))failure; {
+    NSString *cacheKey=[@"section" stringByAppendingString:secCode];
+    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"sec_code":secCode}];
+    [self getData:ARGO_BOARDS_GET_BY_SECTION_URL withParam:param withCacheKey:cacheKey success:success failure:failure];
+}
+
+- (void)getPostByBoard:(NSString *) boardName
+               andFile:(NSString *) fileName
                success:(void (^)(NSDictionary *resultDict))success
                failure:(void (^)(NSString *data, NSError *error))failure; {
+    NSString *cacheKey=[boardName stringByAppendingString:fileName];
+    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
+    [self getData:ARGO_POST_GET_URL withParam:param withCacheKey:cacheKey success:success failure:failure];
+}
+
+- (void)getTopicListByBoard:(NSString *) boardName
+                    andFile:(NSString *) fileName
+                    success:(void (^)(NSDictionary *resultDict))success
+                    failure:(void (^)(NSString *data, NSError *error))failure; {
+    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
+    [self getData:ARGO_POST_TOPICLIST_URL withParam:param success:success failure:failure];
+}
+
+- (void)deletePostByBoard:(NSString *) boardName
+                  andFile:(NSString *) fileName
+                  success:(void (^)(NSDictionary *resultDict))success
+                  failure:(void (^)(NSString *data, NSError *error))failure; {
     NSString *cacheKey=[boardName stringByAppendingString:fileName];
     NSDictionary *resultInCache = [self.postCache objectForKey:cacheKey];
     if (resultInCache) {

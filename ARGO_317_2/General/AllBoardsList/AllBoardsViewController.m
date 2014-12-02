@@ -8,6 +8,7 @@
 
 #import "AllBoardsViewController.h"
 #import "BoardListViewController.h"
+#import "DataManager.h"
 
 
 @interface AllBoardsViewController ()
@@ -15,63 +16,6 @@
 @end
 
 @implementation AllBoardsViewController
-
-
-//load the data, and to see if everything went ok.
--(void)loadData
-{
-    [loadingCell loading];
-    [self performSelector:@selector(fetchServerData) withObject:nil afterDelay:0];
-}
-
--(void)fetchServerData
-{
-    NSURL *url=[NSURL URLWithString:@"http://argo.sysu.edu.cn/ajax/board/alls"];
-    
-    NSURLRequest *request=[NSURLRequest requestWithURL:url];
-    
-    AFHTTPRequestOperation *operation=[[AFHTTPRequestOperation alloc]initWithRequest:request];
-    
-    [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"sucesss:%@",operation.responseObject);
-        
-        NSString *requestTmp = [NSString stringWithString:operation.responseString];
-        NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-        //系统自带JSON解析：
-        NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-        //NSLog(@"resultDict------------------>%@",resultDict);
-        NSDictionary *data=[resultDict objectForKey:@"data"];
-        //NSLog(@"data------------------>%@",data);
-        all=[data objectForKey:@"all"];
-        //缓存all:
-        [[DataCache Instance]saveBoardsAllDataCache:all];
-        for (NSDictionary *allInfo in all)
-        {
-            [sectionNames addObject:[allInfo objectForKey:@"secname"]];
-            [allBoards addObject:[allInfo objectForKey:@"boards"]];
-            
-        }
-        
-        //释放掉已经用过的变量：
-        requestTmp=nil;
-        resData=nil;
-        resultDict=nil;
-        data=nil;
-        all=nil;
-        
-        [self.tableView reloadData];
-        [loadingCell normal];
-        
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        //NSLog(@"Failure: %@", operation.error);
-        
-        UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [av show];
-    }];
-    [operation start];
-
-}
-
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -82,33 +26,31 @@
     return self;
 }
 
+
+//load the data, and to see if everything went ok.
+-(void)loadData
+{
+    [loadingCell loading];
+    
+    [[DataManager manager]getAllSections: ^(NSDictionary *resultDict){
+        sections=[resultDict objectForKey:@"data"];
+        
+        [self.tableView reloadData];
+        [loadingCell normal];
+        
+    } failure:^(NSString *data, NSError *error) {
+        UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [av show];
+    }];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     //初始化实例变量
-    sectionNames=[[NSMutableArray alloc]init];
-    allBoards=[[NSMutableArray alloc]init];
     loadingCell=[[LoadingCell alloc]initWithNormalStr:@"" andLoadingStr:@"数据加载中" andStartViewStr:@"数据加载中"];
-    all=[[NSArray alloc]init];
-    
-    
-    
-    //如果缓存了数据，则读取缓存数据,否则，加载服务器数据：
-    if ([[DataCache Instance]getBoardsAllDataCache]) {
-        
-        all=[[DataCache Instance]getBoardsAllDataCache];
-        
-        for (NSDictionary *allInfo in all)
-        {
-            [sectionNames addObject:[allInfo objectForKey:@"secname"]];
-            [allBoards addObject:[allInfo objectForKey:@"boards"]];
-        }
 
-    }else{
-        
-        [self performSelector:@selector(loadData) withObject:nil afterDelay:0.1];
-        
-    }
+    [self performSelector:@selector(loadData) withObject:nil afterDelay:0.1];
     
     //下拉刷新
     [self pullDownToRefresh];
@@ -146,8 +88,7 @@
 
 - (void)clear
 {
-    [sectionNames removeAllObjects];
-    [allBoards removeAllObjects];
+    sections = nil;
     
     [loadingCell loading];
     
@@ -164,7 +105,7 @@
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [sectionNames count]+1;
+    return [sections count] + 1;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -174,13 +115,10 @@
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"sectionListCell"];
     }
-    if (indexPath.row <[sectionNames count]) {
+    if (indexPath.row <[sections count]) {
         
         NSString *str=@"loading..";
-        
-        if (sectionNames&&[sectionNames count]) {
-            str=[NSString stringWithFormat:@"%@",sectionNames[indexPath.row]];
-        }
+        str=[NSString stringWithFormat:@"%@",[sections[indexPath.row] objectForKey:@"secname"]];
         
         cell.textLabel.text=str;
         
@@ -201,9 +139,9 @@
     if ([segue.identifier isEqualToString:@"showBoardlistViewController"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         BoardListViewController *destViewController = segue.destinationViewController;
-        if (allBoards&&[allBoards count]) {
-            destViewController.boards=allBoards[indexPath.row];
-            destViewController.navigationItem.title=[NSString stringWithFormat:@"%@",sectionNames[indexPath.row]];
+        if (sections&&[sections count]) {
+            destViewController.sectionDict=sections[indexPath.row];
+            destViewController.navigationItem.title=[NSString stringWithFormat:@"%@",[sections[indexPath.row] objectForKey:@"secname"]];
         }else{
             NSDictionary *nullDict=@{@"title": @"error",@"boardname":@"",@"total_today":@"",@"BM":@""};
             destViewController.boards=@[nullDict];
