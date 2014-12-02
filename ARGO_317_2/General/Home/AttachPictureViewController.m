@@ -7,10 +7,9 @@
 //
 
 #import "AttachPictureViewController.h"
-//#import "UIImageView+AFNetworking.h"
 #import "UIImageView+WebCache.h"
-#import "UIImageView+LK.h"
 #import "AddPostViewController.h"
+#import "MBProgressHUD.h"
 
 
 @interface AttachPictureViewController ()
@@ -33,40 +32,35 @@
 {
     [super viewDidLoad];
     
-    /*
-    [self.attachPicture setClipsToBounds:YES];
-    //[self.attachPicture setBounds:CGRectMake(0.0, 0.0, 320, CGFLOAT_MAX)];
-    [self.attachPicture setContentMode:UIViewContentModeTopLeft];
-     */
-    
     [self downLoadImage];
 }
 
 
--(void)downLoadImage
-{
-   /*
-    NSString *urlStr=[NSString stringWithFormat:@"http://argo.sysu.edu.cn/attach/%@/%@",boardName,fileTimeStr];
-    [self.attachPicture setImageWithURL:[NSURL URLWithString:urlStr]];
-    urlStr=nil;
-    */
-    NSString *urlStr=[NSString stringWithFormat:@"http://argo.sysu.edu.cn/attach/%@/%@",boardName,fileTimeStr];
-    NSURL *imageURL=[NSURL URLWithString:urlStr];
-    __weak UIImageView *weakImageView = self.attachPicture;
-    weakImageView.imageURL = imageURL;
+-(void)downLoadImage {
+    NSURL *imageURL=[NSURL URLWithString:[NSString stringWithFormat:@"http://argo.sysu.edu.cn/attach/%@/%@",boardName,fileTimeStr]];
 
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    hud.labelText = @"努力抓图中...";
 
+    [self.attachPicture
+       setImageWithURL:imageURL
+      placeholderImage:nil
+               options:SDWebImageProgressiveDownload
+              progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                 hud.progress = ((double)receivedSize) / expectedSize;
+              }
+             completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType) {
+                 // TODO: handle error situations.
+                 [hud hide:YES];
+             }
+     ];
 }
-
-
-
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
 
 #pragma mark - Navigation
 
@@ -87,7 +81,6 @@
         //addPostViewController.attach=@"";
         //发帖页面title:
         addPostViewController.viewTitleStr=@"举报";
-        
         
         //释放掉变量：
         addPostViewController=nil;
