@@ -17,6 +17,9 @@
 @property (nonatomic, strong) NSArray *boards;
 @property (nonatomic, strong) NSDictionary *sectionDict;
 
+@property (nonatomic, strong) LoadingCell *loadingCell;
+@property (strong, nonatomic) UIRefreshControl *refreshControl;
+
 
 
 @end
