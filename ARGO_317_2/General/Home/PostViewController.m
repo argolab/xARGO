@@ -684,203 +684,85 @@
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    UIButton *btn = (UIButton *)sender;
+    UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];;
+    //先判断系统版本，8.0以下系统会有不一样的表现(?):
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 8.0) {
+        view = (UITableViewCell *)[view superview];
+    }
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:view];
     
-    //先判断系统版本，8.0以上系统会有不一样的表现：
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-        
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
-        if ([segue.identifier isEqualToString:@"replyPost"]) {
-            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-            
-            UIButton *btn = (UIButton *)sender;
-            
-            //UITableViewCell *view = (UITableViewCell *)[[[btn superview] superview] superview];
-            UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];
-            //注：修改于10月7日，三层superview的变成了两层了。
-            
-            indexPath = [self.tableView indexPathForCell:view];
-            
-            AddPostViewController *addPostViewController=segue.destinationViewController;
-            
-            if (postFeeds&&[postFeeds count]) {
-                addPostViewController.type=@"reply";
-                addPostViewController.titleStr=[NSString stringWithFormat:@"Re: %@",[postFeeds[indexPath.row]objectForKey:@"title"]];
-                addPostViewController.boardName=self.boardName;
-                addPostViewController.rawcontent=[NSString stringWithFormat:@"【在%@（%@）的大作中提到：】\n%@",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"],[postFeeds[indexPath.row] objectForKey:@"rawcontent"]];
-                //可选参数赋值空字符串：
-                addPostViewController.articleid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row] objectForKey:@"filename"]];
-                //addPostViewController.attach=@"";
-                //发帖页面title:
-                addPostViewController.viewTitleStr=@"评论";
-            }else{
-                addPostViewController.type=@"reply";
-                addPostViewController.titleStr=@"";
-                addPostViewController.boardName=self.boardName;
-                addPostViewController.rawcontent=@"";
-                addPostViewController.articleid=@"";
-                addPostViewController.viewTitleStr=@"出错了，请退回重新进入";
-            }
-            
-            btn=nil;
-            view=nil;
-            addPostViewController=nil;
-            
-        }
-        if ([segue.identifier isEqualToString:@"showUserInfo"]) {
-            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-            
-            UIButton *btn = (UIButton *)sender;
-            
-            //UITableViewCell *view = (UITableViewCell *)[[[btn superview] superview] superview];
-            UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];
-            
-            indexPath = [self.tableView indexPathForCell:view];
-            
-            UserQueryViewController *userQueryViewController=segue.destinationViewController;
-            
-            if (postFeeds&&[postFeeds count]) {
-                userQueryViewController.userid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"userid"]];
-                
-                userQueryViewController.navigationItem.title=[NSString stringWithFormat:@"%@(%@)",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"]];
-            }else{
-                userQueryViewController.userid=@"";
-                userQueryViewController.navigationItem.title=@"出错了，请退回重新进入";
-            }
-            
-            btn=nil;
-            view=nil;
-            indexPath=nil;
-            userQueryViewController=nil;
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+    if ([segue.identifier isEqualToString:@"replyPost"]) {
+        AddPostViewController *addPostViewController=segue.destinationViewController;
+        if (postFeeds&&[postFeeds count]) {
+            addPostViewController.type=@"reply";
+            addPostViewController.titleStr=[self formatReplyingTitle:[postFeeds[indexPath.row]objectForKey:@"title"]];
+            addPostViewController.boardName=self.boardName;
+            addPostViewController.rawcontent=[NSString stringWithFormat:@"【在%@（%@）的大作中提到：】\n%@",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"],[self formatQuotingContent:[postFeeds[indexPath.row] objectForKey:@"rawcontent"]]];
+            //可选参数赋值空字符串：
+            addPostViewController.articleid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row] objectForKey:@"filename"]];
+            //addPostViewController.attach=@"";
+            //发帖页面title:
+            addPostViewController.viewTitleStr=@"评论";
+        } else {
+            addPostViewController.type=@"reply";
+            addPostViewController.titleStr=@"";
+            addPostViewController.boardName=self.boardName;
+            addPostViewController.rawcontent=@"";
+            addPostViewController.articleid=@"";
+            addPostViewController.viewTitleStr=@"出错了，请退回重新进入";
         }
         
-        if ([segue.identifier isEqualToString:@"showPicture"]) {
-            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-            
-            UIButton *btn = (UIButton *)sender;
-            
-            //UITableViewCell *view = (UITableViewCell *)[[[btn superview] superview] superview];
-            UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];
-            
-            indexPath = [self.tableView indexPathForCell:view];
-            
-            AttachPictureViewController *attachPictureViewController=segue.destinationViewController;
-            
-            if (postFeeds&&[postFeeds count]) {
-                attachPictureViewController.fileTimeStr=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"post_time"]];
-                attachPictureViewController.boardName=self.boardName;
-                
-            }else{
-                attachPictureViewController.fileTimeStr=@"";
-                attachPictureViewController.navigationItem.title=@"出错了，请退回重新进入";
-                
-            }
-            btn=nil;
-            view=nil;
-            indexPath=nil;
-            attachPictureViewController=nil;
-        }
-
-        
-    }else{
-        
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
-        if ([segue.identifier isEqualToString:@"replyPost"]) {
-            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-            
-            UIButton *btn = (UIButton *)sender;
-            
-            UITableViewCell *view = (UITableViewCell *)[[[btn superview] superview] superview];
-            //UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];
-            //注：修改于10月7日，三层superview的变成了两层了。
-            
-            indexPath = [self.tableView indexPathForCell:view];
-            
-            AddPostViewController *addPostViewController=segue.destinationViewController;
-            
-            if (postFeeds&&[postFeeds count]) {
-                addPostViewController.type=@"reply";
-                addPostViewController.titleStr=[NSString stringWithFormat:@"Re: %@",[postFeeds[indexPath.row]objectForKey:@"title"]];
-                addPostViewController.boardName=self.boardName;
-                addPostViewController.rawcontent=[NSString stringWithFormat:@"【在%@（%@）的大作中提到：】\n%@",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"],[postFeeds[indexPath.row] objectForKey:@"rawcontent"]];
-                //可选参数赋值空字符串：
-                addPostViewController.articleid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row] objectForKey:@"filename"]];
-                //addPostViewController.attach=@"";
-                //发帖页面title:
-                addPostViewController.viewTitleStr=@"评论";
-            }else{
-                addPostViewController.type=@"reply";
-                addPostViewController.titleStr=@"";
-                addPostViewController.boardName=self.boardName;
-                addPostViewController.rawcontent=@"";
-                addPostViewController.articleid=@"";
-                addPostViewController.viewTitleStr=@"出错了，请退回重新进入";
-            }
-            
-            btn=nil;
-            view=nil;
-            addPostViewController=nil;
-            
-        }
-        if ([segue.identifier isEqualToString:@"showUserInfo"]) {
-            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-            
-            UIButton *btn = (UIButton *)sender;
-            
-            UITableViewCell *view = (UITableViewCell *)[[[btn superview] superview] superview];
-            //UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];
-            
-            indexPath = [self.tableView indexPathForCell:view];
-            
-            UserQueryViewController *userQueryViewController=segue.destinationViewController;
-            
-            if (postFeeds&&[postFeeds count]) {
-                userQueryViewController.userid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"userid"]];
-                
-                userQueryViewController.navigationItem.title=[NSString stringWithFormat:@"%@(%@)",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"]];
-            }else{
-                userQueryViewController.userid=@"";
-                userQueryViewController.navigationItem.title=@"出错了，请退回重新进入";
-            }
-            
-            btn=nil;
-            view=nil;
-            indexPath=nil;
-            userQueryViewController=nil;
-        }
-        
-        if ([segue.identifier isEqualToString:@"showPicture"]) {
-            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-            
-            UIButton *btn = (UIButton *)sender;
-            
-            UITableViewCell *view = (UITableViewCell *)[[[btn superview] superview] superview];
-            //UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];
-            
-            indexPath = [self.tableView indexPathForCell:view];
-            
-            AttachPictureViewController *attachPictureViewController=segue.destinationViewController;
-            
-            if (postFeeds&&[postFeeds count]) {
-                attachPictureViewController.fileTimeStr=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"post_time"]];
-                attachPictureViewController.boardName=self.boardName;
-                
-            }else{
-                attachPictureViewController.fileTimeStr=@"";
-                attachPictureViewController.navigationItem.title=@"出错了，请退回重新进入";
-                
-            }
-            btn=nil;
-            view=nil;
-            indexPath=nil;
-            attachPictureViewController=nil;
-        }
-
+        addPostViewController=nil;
         
     }
+    if ([segue.identifier isEqualToString:@"showUserInfo"]) {
+        UserQueryViewController *userQueryViewController=segue.destinationViewController;
+        if (postFeeds&&[postFeeds count]) {
+            userQueryViewController.userid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"userid"]];
+            userQueryViewController.navigationItem.title=[NSString stringWithFormat:@"%@(%@)",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"]];
+        } else {
+            userQueryViewController.userid=@"";
+            userQueryViewController.navigationItem.title=@"出错了，请退回重新进入";
+        }
+        userQueryViewController=nil;
+    }
+    
+    if ([segue.identifier isEqualToString:@"showPicture"]) {
+        
+        AttachPictureViewController *attachPictureViewController=segue.destinationViewController;
+        if (postFeeds&&[postFeeds count]) {
+            attachPictureViewController.fileTimeStr=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"post_time"]];
+            attachPictureViewController.boardName=self.boardName;
+        } else {
+            attachPictureViewController.fileTimeStr=@"";
+            attachPictureViewController.navigationItem.title=@"出错了，请退回重新进入";
+        }
+        attachPictureViewController=nil;
+    }
+    
+    btn=nil;
+    view=nil;
+    indexPath=nil;
 }
 
+- (NSString*) formatReplyingTitle:(NSString*) originalTitle {
+    NSString* format= ([originalTitle hasPrefix:@"Re: "])?@"%@":@"Re: %@";
+    return [NSString stringWithFormat:format,originalTitle];
+}
+
+- (NSString*) formatQuotingContent:(NSString*) originalContent {
+    NSLog(@"%@", originalContent);
+    NSMutableString* formatedContent = [[NSMutableString alloc] init];
+    NSArray* array=[originalContent componentsSeparatedByString:@"\n"];
+    for (int iter = 1; iter < [array count]-1; ++iter) {
+        [formatedContent appendString:@": "];
+        [formatedContent appendString:[array objectAtIndex:iter]];
+        [formatedContent appendString:@"\n"];
+    }
+    return formatedContent;
+}
 @end
