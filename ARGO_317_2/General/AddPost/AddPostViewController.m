@@ -59,7 +59,7 @@
     
     // title:
     self.titleTextField.text=titleStr;
-    self.contentTextView.text=[NSString stringWithFormat:@"\n\n-------\n来自xARGO（逸仙时空iOS客户端）\n\n%@",rawcontent];
+    self.contentTextView.text=[NSString stringWithFormat:@"\n\n-------\n来自xARGO（逸仙时空iOS客户端）\n%@",rawcontent];
     //定义contentTextView边框
     self.contentTextView.layer.borderColor=[UIColor blackColor].CGColor;
     self.contentTextView.layer.borderWidth =1.0;

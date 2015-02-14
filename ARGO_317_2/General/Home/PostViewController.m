@@ -484,7 +484,7 @@
             post_timeStr=[self timeDescipFrom:[[postFeeds[indexPath.row] objectForKey:@"post_time"]doubleValue]];
             floorStr=[NSString stringWithFormat:@"#%ld",(long)indexPath.row+1];
             
-            rawcontentStr=[NSString stringWithFormat:@"%@\n------",[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row] objectForKey:@"rawcontent"]]];
+            rawcontentStr=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row] objectForKey:@"rawcontent"]];
             
             //如果有附图，则赋值给isPicture;
             if ([postFeeds[indexPath.row]objectForKey:@"ah"]&&[[postFeeds[indexPath.row]objectForKey:@"ah"]count]) {
@@ -569,7 +569,7 @@
 -(CGFloat) getTheHeight:(NSInteger)row
 {
     // 显示的内容
-    NSString *rawcontentStr=[NSString stringWithFormat:@"%@\n------",[postFeeds[row] objectForKey:@"rawcontent"]];
+    NSString *rawcontentStr=[postFeeds[row] objectForKey:@"rawcontent"];
     
     // 计算出高度
     NSDictionary *attribute=@{NSFontAttributeName: [UIFont systemFontOfSize:14]};
@@ -758,7 +758,10 @@
     NSLog(@"%@", originalContent);
     NSMutableString* formatedContent = [[NSMutableString alloc] init];
     NSArray* array=[originalContent componentsSeparatedByString:@"\n"];
+    // The first and last line breakers shall be ignored.
     for (int iter = 1; iter < [array count]-1; ++iter) {
+        if ([[array objectAtIndex:iter] hasPrefix:@": "])
+            break;
         [formatedContent appendString:@": "];
         [formatedContent appendString:[array objectAtIndex:iter]];
         [formatedContent appendString:@"\n"];
