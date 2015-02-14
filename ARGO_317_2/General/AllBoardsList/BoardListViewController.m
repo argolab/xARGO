@@ -9,7 +9,6 @@
 #import "BoardListViewController.h"
 #import "PostListViewController.h"
 #import "DataManager.h"
-#import "TDBadgedCell.h"
 
 @interface BoardListViewController ()
 
@@ -166,6 +165,7 @@
         destViewController.boardName=[[boards objectAtIndex:indexPath.row]objectForKey:@"filename"];
 
         destViewController.boardTitle=[NSString stringWithFormat:@"%@",[boards[indexPath.row]objectForKey:@"title"]];
+        // NSLog(@"%@",[boards description]);
 
         destViewController=nil;//important!否则如果持续使用会导致内存被塞满
         indexPath=nil;

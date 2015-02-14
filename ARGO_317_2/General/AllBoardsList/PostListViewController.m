@@ -9,7 +9,7 @@
 #import "PostListViewController.h"
 #import "PostViewController.h"
 #import "AddPostViewController.h"
-
+#import "DataManager.h"
 
 
 @interface PostListViewController ()
@@ -42,41 +42,21 @@
 //获取total_topicNum参数
 - (void)fetchTotal_topicNumWithBoardName:(NSString *)boardname
 {
-    
-    NSString *urlString=@"http://argo.sysu.edu.cn/ajax/board/get";
-    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardname}];
-    [[AFHTTPRequestOperationManager manager] GET:urlString parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject){
-        
-        //NSLog(@"success------------------------>%@",operation.responseObject);
-        NSString *requestTmp = [NSString stringWithString:operation.responseString];
-        NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-        //系统自带JSON解析：
-        NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-        //NSLog(@"resultDict------------------>%@",resultDict);
-        NSDictionary *board=[resultDict objectForKey:@"data"];
-        total_topicNum=[[board objectForKey:@"total_topic"]integerValue];
-        NSLog(@"total_topicNum----------->%ld",(long)total_topicNum);
-        
-        //记录下拉刷新时间：
-        lastUpdated=[NSString stringWithFormat:@"上次更新时间 %@",
-                     [dateFormatter stringFromDate:[NSDate date]]];
-
-        
-        //释放用完的变量：
-        requestTmp=nil;
-        resData=nil;
-        resultDict=nil;
-        board=nil;
-        
-    }failure:^(AFHTTPRequestOperation *operation, NSError *error){
-        
-        //NSLog(@"Failure: %@", operation.error);
-        UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [av show];
-    }];
+    // NSLog(@"Post List.");
+    if (self.boardName && self.boardTitle) {
+        [[DataManager manager] getBoardByBoardName:boardname success:^(NSDictionary *data){
+            // NSLog(@"Dictionary: %@", [data description]);
+            
+            total_topicNum=[[[data objectForKey:@"data"] objectForKey:@"total_topic"]integerValue];
+            //记录下拉刷新时间：
+            lastUpdated=[NSString stringWithFormat:@"上次更新时间 %@",
+                         [dateFormatter stringFromDate:[NSDate date]]];
+        } failure: ^(NSString *data, NSError *error){
+            UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [av show];
+        }];
+    }
 }
-
-
 
 - (void)viewDidLoad
 {
@@ -105,9 +85,6 @@
     //设置分隔线样式
     _tableView.separatorStyle=UITableViewCellSeparatorStyleSingleLineEtched;
 
-
-    //获取total_topicNum参数
-    //[self fetchTotal_topicNumWithBoardName:boardName];
     //请求服务器数据：
     postList=[[NSMutableArray alloc]init];
     [loadingCell performSelector:@selector(startView) withObject:nil afterDelay:0.1];
@@ -506,23 +483,6 @@
     return height+30;
     
 }
-
-
-
-/*
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    PostViewController *postViewController=[[PostViewController alloc]init];
-    [[self navigationController]pushViewController:postViewController animated:YES];
-    [[postViewController navigationItem]setTitle:[postListData.postListItems.postList[indexPath.row]objectForKey:@"title"]];
-    postViewController.boardName=self.boardName;
-    postViewController.fileName=[self.postListData.postListItems.postList[indexPath.row]objectForKey:@"filename"];
-    //NSLog(@"postViewController.fileName------------------->%@",postViewController.fileName);
-    //NSLog(@"postViewController.boardName------------------->%@",postViewController.boardName);
-    postViewController=nil;
-
-}
- */
 
 
 

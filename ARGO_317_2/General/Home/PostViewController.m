@@ -178,7 +178,7 @@
     //页数加一
     currPage++;
     
-    [[DataManager manager] getTopicListByBoard:boardname andFile:filename
+    [[DataManager manager] getPostsPerTopicByBoardName:boardname andFile:filename
         success:^(NSDictionary *resultDict){
         int success=[[resultDict objectForKey:@"success"]intValue];
         if (success==1) {
@@ -360,7 +360,7 @@
         //数据准备好了才能
         if (isDataReady) {
             //等待上拉刷新：
-             [[DataManager manager] getTopicListByBoard:boardName andFile:fileName
+             [[DataManager manager] getPostsPerTopicByBoardName:boardName andFile:fileName
                 success:^(NSDictionary *resultDict) {
                 NSArray *data=[resultDict objectForKey:@"data"];
                 

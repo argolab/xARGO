@@ -10,18 +10,27 @@
 
 @implementation DataManager
 
-NSString * const ARGO_BASE_URL              = @"http://argo.sysu.edu.cn/ajax/";
+NSString * const ARGO_BASE_URL                  = @"http://argo.sysu.edu.cn/ajax/";
 
-NSString * const ARGO_POST_GET_URL          = @"http://argo.sysu.edu.cn/ajax/post/get";
-NSString * const ARGO_POST_TOPICLIST_URL    = @"http://argo.sysu.edu.cn/ajax/post/topiclist";
-NSString * const ARGO_POST_DELETE_URL       = @"http://argo.sysu.edu.cn/ajax/post/del";
+// Full list of sections
+NSString * const ARGO_SECTIONS_URL              = @"http://argo.sysu.edu.cn/ajax/section/";
 
-NSString * const ARGO_SECTIONS_URL          = @"http://argo.sysu.edu.cn/ajax/section/";
+// List of boards that belong to one section
+NSString * const ARGO_BOARDS_GET_BY_SECTION_URL = @"http://argo.sysu.edu.cn/ajax/board/getbysec";
 
-NSString * const ARGO_BOARDS_GET_BY_SECTION_URL       = @"http://argo.sysu.edu.cn/ajax/board/getbysec";
+// Meta info of a board.
+NSString * const ARGO_BOARD_GET_URL             = @"http://argo.sysu.edu.cn/ajax/board/get";
+
+// A list of Posts that belong to one topic.
+NSString * const ARGO_POSTS_PER_TOPIC_URL       = @"http://argo.sysu.edu.cn/ajax/post/topiclist";
+
+// A single Post get by boardname and filename.
+NSString * const ARGO_POST_GET_URL              = @"http://argo.sysu.edu.cn/ajax/post/get";
+// Delete specific post.
+NSString * const ARGO_POST_DELETE_URL           = @"http://argo.sysu.edu.cn/ajax/post/del";
 
 
-NSString * const MSG_NETWORK_FAILURE        = @"MSG_NETWORK_FAILURE";
+NSString * const MSG_NETWORK_FAILURE            = @"MSG_NETWORK_FAILURE";
 
 DataManager *manager;
 
@@ -90,12 +99,19 @@ DataManager *manager;
     [self getData:ARGO_POST_GET_URL withParam:param withCacheKey:cacheKey success:success failure:failure];
 }
 
-- (void)getTopicListByBoard:(NSString *) boardName
+- (void) getBoardByBoardName:(NSString *) boardName
+                   success:(void (^)(NSDictionary *resultDict))success
+                   failure:(void (^)(NSString *data, NSError *error))failure {
+    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName}];
+    [self getData:ARGO_BOARD_GET_URL withParam:param success:success failure:failure];
+}
+
+- (void) getPostsPerTopicByBoardName:(NSString *) boardName
                     andFile:(NSString *) fileName
                     success:(void (^)(NSDictionary *resultDict))success
                     failure:(void (^)(NSString *data, NSError *error))failure; {
     NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
-    [self getData:ARGO_POST_TOPICLIST_URL withParam:param success:success failure:failure];
+    [self getData:ARGO_POSTS_PER_TOPIC_URL withParam:param success:success failure:failure];
 }
 
 - (void)deletePostByBoard:(NSString *) boardName
