@@ -11,7 +11,7 @@
 #import "DataCache.h"
 #import "AFNetworking.h"
 
-@interface AllBoardsViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource>
+@interface AllBoardListViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource>
 {
     LoadingCell *loadingCell;
     NSArray *sections;

@@ -7,7 +7,7 @@
 //
 
 #import "MyCollectionViewController.h"
-#import "PostListViewController.h"
+#import "TopicListViewController.h"
 #import "LoginViewController.h"
 
 @interface MyCollectionViewController ()
@@ -234,7 +234,7 @@
         
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         
-        PostListViewController *destViewController = segue.destinationViewController;
+        TopicListViewController *destViewController = segue.destinationViewController;
         
         if (favariteBoards&&[favariteBoards count]) {
             destViewController.boardName=[favariteBoards[indexPath.row]objectForKey:@"boardname"];

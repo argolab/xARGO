@@ -6,17 +6,17 @@
 //  Copyright (c) 2014年 490021684@qq.com. All rights reserved.
 //
 
+#import "TopicListViewController.h"
 #import "PostListViewController.h"
-#import "PostViewController.h"
 #import "AddPostViewController.h"
 #import "DataManager.h"
 
 
-@interface PostListViewController ()
+@interface TopicListViewController ()
 
 @end
 
-@implementation PostListViewController
+@implementation TopicListViewController
 @synthesize refreshControl;
 @synthesize boardName,postListPage,postList,loadingCell,total_topicNum,boardTitle;
 @synthesize _tableView;
@@ -495,7 +495,7 @@
     // Pass the selected object to the new view controller.
     if ([segue.identifier isEqualToString:@"showPostViewFromPostListView"]) {
         NSIndexPath *indexPath = [self._tableView indexPathForSelectedRow];
-        PostViewController *postViewController= segue.destinationViewController;
+        PostListViewController *postViewController= segue.destinationViewController;
         
         postViewController.boardName=self.boardName;
         if (postList&&[postList count]) {

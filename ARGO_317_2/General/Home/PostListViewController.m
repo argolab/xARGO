@@ -6,7 +6,7 @@
 //  Copyright (c) 2014年 490021684@qq.com. All rights reserved.
 //
 
-#import "PostViewController.h"
+#import "PostListViewController.h"
 #import "AddPostViewController.h"
 #import "UserQueryViewController.h"
 #import "AttachPictureViewController.h"
@@ -18,11 +18,11 @@
 #define rawcontentTag   3
 
 
-@interface PostViewController ()
+@interface PostListViewController ()
 
 @end
 
-@implementation PostViewController
+@implementation PostListViewController
 @synthesize boardName,fileName;
 @synthesize postTopicList,postFeeds,tempPostFeeds;
 

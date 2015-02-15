@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface AllBoardsListNavViewController : UINavigationController
+@interface AllBoardListNavViewController : UINavigationController
 
 @end

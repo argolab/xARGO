@@ -7,7 +7,7 @@
 //
 
 #import "BoardListViewController.h"
-#import "PostListViewController.h"
+#import "TopicListViewController.h"
 #import "DataManager.h"
 
 @interface BoardListViewController ()
@@ -161,7 +161,7 @@
     if ([segue.identifier isEqualToString:@"showPostListFromBoardList"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         //传递参数
-        PostListViewController *destViewController = segue.destinationViewController;
+        TopicListViewController *destViewController = segue.destinationViewController;
         destViewController.boardName=[[boards objectAtIndex:indexPath.row]objectForKey:@"filename"];
 
         destViewController.boardTitle=[NSString stringWithFormat:@"%@",[boards[indexPath.row]objectForKey:@"title"]];

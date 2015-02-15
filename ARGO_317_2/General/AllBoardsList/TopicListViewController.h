@@ -16,7 +16,7 @@
 #import "AFNetworking.h"
 
 
-@interface PostListViewController : UIViewController<SINavigationMenuDelegate,MBProgressHUDDelegate,UITableViewDelegate,UITableViewDataSource>
+@interface TopicListViewController : UIViewController<SINavigationMenuDelegate,MBProgressHUDDelegate,UITableViewDelegate,UITableViewDataSource>
 {
     NSString *boardName;
     NSInteger currPage;

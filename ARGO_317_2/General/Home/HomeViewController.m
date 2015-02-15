@@ -7,7 +7,7 @@
 //
 
 #import "HomeViewController.h"
-#import "PostViewController.h"
+#import "PostListViewController.h"
 #import "AFNetworking.h"
 
 #define REFRESH_HEADER_HEIGHT 52.0f
@@ -470,7 +470,7 @@
          
          NSInteger section = indexPath.section;
          
-         PostViewController *destViewController = segue.destinationViewController;
+         PostListViewController *destViewController = segue.destinationViewController;
          
          if (section==0) {
              

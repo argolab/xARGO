@@ -6,7 +6,7 @@
 //  Copyright (c) 2014年 490021684@qq.com. All rights reserved.
 //
 
-#import "AllBoardsViewController.h"
+#import "AllBoardListViewController.h"
 
 @interface BoardListViewController : UITableViewController<UITableViewDelegate, UITableViewDataSource>
 {

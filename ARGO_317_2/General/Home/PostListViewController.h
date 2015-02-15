@@ -11,7 +11,7 @@
 #import "LoadingCell.h"
 #import "MBProgressHUD.h"
 
-@interface PostViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource,MBProgressHUDDelegate>
+@interface PostListViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource,MBProgressHUDDelegate>
 {
     NSString *boardName;
     NSString *fileName;

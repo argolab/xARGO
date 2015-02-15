@@ -6,16 +6,16 @@
 //  Copyright (c) 2014年 490021684@qq.com. All rights reserved.
 //
 
-#import "AllBoardsListNavViewController.h"
+#import "AllBoardListNavViewController.h"
 #import <QuartzCore/QuartzCore.h>
 #import "ARGOECSlidingViewController.h"
 #import "MEMenuViewController.h"
 
-@interface AllBoardsListNavViewController ()
+@interface AllBoardListNavViewController ()
 
 @end
 
-@implementation AllBoardsListNavViewController
+@implementation AllBoardListNavViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {

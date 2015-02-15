@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="vXZ-lx-hvc">
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
@@ -648,10 +647,10 @@
             </objects>
             <point key="canvasLocation" x="837" y="1606"/>
         </scene>
-        <!--Post List View Controller-->
+        <!--Topic List View Controller-->
         <scene sceneID="WXb-cb-vkh">
             <objects>
-                <viewController id="RdN-GC-4HK" customClass="PostListViewController" sceneMemberID="viewController">
+                <viewController id="RdN-GC-4HK" customClass="TopicListViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="sp0-02-IXf"/>
                         <viewControllerLayoutGuide type="bottom" id="zfn-J9-jxl"/>
@@ -741,10 +740,10 @@
             </objects>
             <point key="canvasLocation" x="1315" y="1606"/>
         </scene>
-        <!--All Boards List Nav View Controller-->
+        <!--All Board List Nav View Controller-->
         <scene sceneID="Lbo-W4-DgV">
             <objects>
-                <navigationController definesPresentationContext="YES" id="zQ3-hz-Nja" customClass="AllBoardsListNavViewController" sceneMemberID="viewController">
+                <navigationController definesPresentationContext="YES" id="zQ3-hz-Nja" customClass="AllBoardListNavViewController" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="rwy-JX-UJp">
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -830,7 +829,7 @@
         <!--分区-->
         <scene sceneID="gxY-UD-kHN">
             <objects>
-                <tableViewController id="TjS-IC-IhW" customClass="AllBoardsViewController" sceneMemberID="viewController">
+                <tableViewController id="TjS-IC-IhW" customClass="AllBoardListViewController" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="50" sectionHeaderHeight="22" sectionFooterHeight="22" id="txM-hC-sMl">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1482,7 +1481,7 @@
         <!--帖子内容-->
         <scene sceneID="Tdt-2L-FPe">
             <objects>
-                <tableViewController id="lf9-Xw-C6I" customClass="PostViewController" sceneMemberID="viewController">
+                <tableViewController id="lf9-Xw-C6I" customClass="PostListViewController" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" showsSelectionImmediatelyOnTouchBegin="NO" rowHeight="250" sectionHeaderHeight="22" sectionFooterHeight="22" id="nME-AE-v54">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

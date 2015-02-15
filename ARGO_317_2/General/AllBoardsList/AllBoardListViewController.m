@@ -6,16 +6,16 @@
 //  Copyright (c) 2014年 490021684@qq.com. All rights reserved.
 //
 
-#import "AllBoardsViewController.h"
+#import "AllBoardListViewController.h"
 #import "BoardListViewController.h"
 #import "DataManager.h"
 
 
-@interface AllBoardsViewController ()
+@interface AllBoardListViewController ()
 
 @end
 
-@implementation AllBoardsViewController
+@implementation AllBoardListViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {

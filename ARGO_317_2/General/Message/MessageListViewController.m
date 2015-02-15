@@ -7,7 +7,7 @@
 //
 
 #import "MessageListViewController.h"
-#import "PostViewController.h"
+#import "PostListViewController.h"
 
 @interface MessageListViewController ()
 
@@ -420,7 +420,7 @@
     if ([[NSString stringWithFormat:@"%@",[postList[indexPath.row]objectForKey:@"type"]]isEqualToString:@"b"]) {
         
     }else{
-        PostViewController *postViewController= segue.destinationViewController;
+        PostListViewController *postViewController= segue.destinationViewController;
         
         if ([segue.identifier isEqualToString:@"showPostViewFromMessageListView"]) {
             
