@@ -38,6 +38,7 @@ DataManager *manager;
     if(manager == nil){
         manager = [self alloc];
         manager.postCache = [[NSCache alloc] init];
+        manager.postCache.countLimit = 1000;
     }
     return manager;
 }

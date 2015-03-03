@@ -404,38 +404,43 @@
         NSString *ownerStr=@"loading..";
         NSString *updateTimeStr=@"loading..";
         
+        NSDictionary *post = postList[indexPath.row];
+        
         if (postList&&[postList count]) {
-            titleStr=[NSString stringWithFormat:@"%@（%ld）",[postList[indexPath.row]objectForKey:@"title"],(long)[[postList[indexPath.row]objectForKey:@"total_reply"]integerValue]+1];
+            titleStr = [self formatTitle: post];
 
-            ownerStr=[NSString stringWithFormat:@"%@",[postList[indexPath.row]objectForKey:@"owner"]];
+            ownerStr=[NSString stringWithFormat:@"%@",[post objectForKey:@"owner"]];
 
-            updateTimeStr=[self timeDescipFrom:[[postList[indexPath.row]objectForKey:@"update"]doubleValue]];
+            updateTimeStr=[self timeDescipFrom:[[post objectForKey:@"update"]doubleValue]];
         }
         
         ((UILabel *)[cell.contentView viewWithTag:1]).text=titleStr;
-        
         ((UILabel *)[cell.contentView viewWithTag:2]).text=ownerStr;
-        
         ((UILabel *)[cell.contentView viewWithTag:3]).text=updateTimeStr;
         
-        
+        post=nil;
         titleStr=nil;
         ownerStr=nil;
         updateTimeStr=nil;
         
-        
         return cell;
-
-    }else{
+    } else {
         //最后一项，加载更多
         return loadingCell.cell;
     }
 }
 
+-(NSString *) formatTitle:(NSDictionary *) post {
+    long replies = [[post objectForKey:@"total_reply"] integerValue];
+    if (replies == 0)
+        return [NSString stringWithFormat:@"%@",[post objectForKey:@"title"]];
+    else
+        return [NSString stringWithFormat:@"%@（%ld）",[post objectForKey:@"title"], replies];
+}
+
 //将时间戳转为时间,然后再转为可理解的字符串
 -(NSString *)timeDescipFrom:(double)timeStr
 {
-    
     dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"Asia/beijing"];
     
     NSDate *theday = [NSDate dateWithTimeIntervalSince1970:timeStr];
@@ -443,7 +448,7 @@
     NSString *str=[NSString stringWithFormat:@"%@",[dateFormatter stringFromDate:theday]];
     
     theday=nil;
-    
+
     return str;
 }
 

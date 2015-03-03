@@ -138,9 +138,11 @@
         //这里的BM类型是字符串类型，而收藏那里取出来的是数组，要注意区分
         ((UILabel *)[cell.contentView viewWithTag:3]).text=str_BM;
         
-        [[cell.contentView viewWithTag:4] setHidden:hasUnread];
+        // Disable the unread indication temporarily
+        [[cell.contentView viewWithTag:4] setHidden:true];
         
-        ((UILabel *)[cell.contentView viewWithTag:5]).text=numTotalPost;
+        // Disable the total number of topics temporarily
+        [[cell.contentView viewWithTag:5] setHidden:true];
         
         titleStr=nil;
         total_todayStr=nil;
