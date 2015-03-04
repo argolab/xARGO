@@ -29,28 +29,24 @@
 @property (nonatomic, strong) NSString *boardName;
 @property (nonatomic, strong) NSString *fileName;
 @property (nonatomic, strong) NSMutableArray *postTopicList;//里面的元素是filename字符串
-//@property (nonatomic, strong) NSDictionary *postFeed;
-@property (nonatomic, strong) NSMutableArray *postFeeds;//里面的元素是postFeed字典
-@property (nonatomic, strong) NSMutableArray *tempPostFeeds;//临时的PostFeeds.
+@property (nonatomic, strong) NSMutableArray *postList;
 
-
-
--(void)loadData;
-
-//先获取postTopicList，再调用fetchPostFeed，使用循环集合同主题所有帖子内容
--(void)fetchPostWithBoardName:(NSString *)boardname andFilename:(NSString *)filename;
-//-(void)fechiPostTopicListWithBoradName:(NSString *)boardname andFilename:(NSString *)filename;
-
-
-//获取单个帖子的内容postFeed
--(void)fetchPostFeedWithBoardName:(NSString *)boardname andFileName:(NSString *)filename;
-
-
-//上拉记载更多帖子内容
--(void)loadMorePostFeed;
-
-//如果是来自提醒
--(void)fetchMessageDetail;
+//-(void)loadData;
+//
+////先获取postTopicList，再调用fetchPostFeed，使用循环集合同主题所有帖子内容
+//-(void)fetchPostWithBoardName:(NSString *)boardname andFilename:(NSString *)filename;
+////-(void)fechiPostTopicListWithBoradName:(NSString *)boardname andFilename:(NSString *)filename;
+//
+//
+////获取单个帖子的内容postFeed
+//-(void)fetchPostFeedWithBoardName:(NSString *)boardname andFileName:(NSString *)filename;
+//
+//
+////上拉记载更多帖子内容
+//-(void)loadMorePostFeed;
+//
+////如果是来自提醒
+//-(void)fetchMessageDetail;
 
 
 
