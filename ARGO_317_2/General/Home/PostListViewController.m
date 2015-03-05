@@ -23,6 +23,7 @@
 #define floorTag        4
 #define hasPictureTag   5
 
+static long batchCount = 3;
 
 static NSString *CellIdentifier = @"postCell";
 
@@ -41,7 +42,7 @@ static NSString *CellIdentifier = @"postCell";
 
 -(void) initTopicList {
     postTopicList = [[NSMutableArray alloc]init];
-    
+    [loadingCell loading];
     [[DataManager manager] getPostsPerTopicByBoardName:boardName andFile:fileName success:^(NSDictionary *resultDict){
         NSLog(@"On getting topic successfully.");
         int success=[[resultDict objectForKey:@"success"]intValue];
@@ -58,7 +59,7 @@ static NSString *CellIdentifier = @"postCell";
             
             //记录数据加载时间
             lastUpdated=[NSString stringWithFormat:@"上次更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
-            [self.tableView reloadData];
+            [self fetchInBatch:0 count: batchCount];
             }
         } failure:^(NSString *data, NSError *error) {
         // failed?
@@ -74,8 +75,15 @@ static NSString *CellIdentifier = @"postCell";
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    dateFormatter = [[NSDateFormatter alloc] init];
+    dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"Asia/beijing"];
+    dateFormatter.dateFormat=@"yyyy/MM/dd, HH:mm";
+    loadingCell=[[LoadingCell alloc]initWithNormalStr:@"上拉刷新" andLoadingStr:@"数据加载中.." andStartViewStr:@"可下拉刷新.."];
+    [loadingCell loading];
+
     // Load list asynchously.
     [self initTopicList];
+
 }
 
 // -------------------------------------------------------------------------------
@@ -99,57 +107,80 @@ static NSString *CellIdentifier = @"postCell";
 // -------------------------------------------------------------------------------
 //  tableView:cellForRowAtIndexPath:
 // -------------------------------------------------------------------------------
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = nil;
     
     NSUInteger nodeCount = self.postTopicList.count;
     
     if (nodeCount == 0 && indexPath.row == 0)    {
-        // TODO:add a placeholder cell while waiting on table data
-        cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
-        cell.detailTextLabel.text = @"Loading…";
-    } else {
-        cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
-
-        if (nodeCount > 0) {
-            // Set up the cell representing the app
-            NSDictionary *post = (self.postList)[indexPath.row];
-            if(post != (id)[NSNull null]) {
-                [self loadData:self.postList[indexPath.row] toIndex:indexPath andCell:cell];
-            } else {
-                NSLog(@"Filling in loading state cell.");
-                [self loadData:nil toIndex:indexPath andCell:cell];
-
-                NSLog(@"Going to fetch：%@",[postTopicList objectAtIndex:indexPath.row]);
-
-                [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:indexPath.row] success:^(NSDictionary *resultDict) {
-                    NSLog(@"WhenFetchingSucces.%@",resultDict);
-                    if ([resultDict objectForKey:@"data"]&&[[resultDict objectForKey:@"data"]isKindOfClass:[NSDictionary class]]) {
-                        self.postList[indexPath.row]=[resultDict objectForKey:@"data"];
-                        [self loadData:self.postList[indexPath.row] toIndex:indexPath andCell:cell];
-                    }
-                    NSLog(@"TableView rows=%ld",(long)[tableView numberOfRowsInSection:0]);
-                    NSLog(@"Going to reload row=%@",indexPath);
-                    NSLog(@"The cell=%@",[tableView cellForRowAtIndexPath:indexPath]);
-                    if([tableView cellForRowAtIndexPath:indexPath]) {                                                                            [tableView beginUpdates];
-                        [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-                        [tableView endUpdates];
-                    }
-                    
-                    // NSLog(@"postList = %@", self.postList);
-                } failure:^(NSString *data, NSError *error) {
-                    NSLog(@"When fetching failed.");
-                }];
-            }
-        }
+        return loadingCell.cell;
     }
+    
+    cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+
+    // Set up the cell representing the app
+    NSDictionary *post = (self.postList)[indexPath.row];
+    [self composite:cell at:indexPath with:post];
+    
+    if(post == (id)[NSNull null]) {
+        NSLog(@"Going to fetch:%@",[postTopicList objectAtIndex:indexPath.row]);
+        
+        [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:indexPath.row] success:^(NSDictionary *resultDict) {
+            NSLog(@"On fetching successfully:%@",[[resultDict objectForKey:@"data"] objectForKey:@"filename"]);
+            if ([resultDict objectForKey:@"data"]&&[[resultDict objectForKey:@"data"]isKindOfClass:[NSDictionary class]]) {
+                self.postList[indexPath.row]=[resultDict objectForKey:@"data"];
+                [self composite:cell at:indexPath with:self.postList[indexPath.row]];
+            }
+            NSLog(@"TableView rows=%ld",(long)[tableView numberOfRowsInSection:0]);
+            NSLog(@"Going to reload row=%@",indexPath);
+            NSLog(@"The cell=%@",[tableView cellForRowAtIndexPath:indexPath]);
+            if([tableView cellForRowAtIndexPath:indexPath]) {                                                                            [tableView beginUpdates];
+                [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+                [tableView endUpdates];
+            }
+            
+
+        } failure:^(NSString *data, NSError *error) {
+            NSLog(@"When fetching failed.");
+        }];
+    }
+//    Dispatch this in non-main queue to avoid infinite loop:
+//    if ((indexPath.row + batchCount < postTopicList.count) && postList[indexPath.row + batchCount] == [NSNull null]) {
+//        [self fetchInBatch:indexPath.row + 2 count:batchCount];
+//    }
+    
     NSLog(@"Returning cell=%@",cell);
     return cell;
 }
 
-- (void) loadData:(NSDictionary *) data toIndex:(NSIndexPath *) indexPath andCell:(UITableViewCell *) cell {
-    NSLog(@"Loading data %@ toIndex %@ andCell %@", data, indexPath, cell);
+-(void) fetchInBatch:(long) from count:(long) count {
+    assert(postTopicList.count > 0);
+    assert(count >= 0);
+    __block int counter = 0;
+    unsigned long threshold = MIN(count, postTopicList.count - from);
+    NSLog(@"Going to fetch next %ld from %ld", count, from);
+    for (int i = 0; i < threshold; ++i) {
+        NSLog(@"Going to fetch :%@", [postTopicList objectAtIndex:i]);
+        [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:i] success:^(NSDictionary *resultDict) {
+            NSLog(@"On fetching successfully:%@",[[resultDict objectForKey:@"data"] objectForKey:@"filename"]);
+            if ([resultDict objectForKey:@"data"]&&[[resultDict objectForKey:@"data"]isKindOfClass:[NSDictionary class]]) {
+                self.postList[i]=[resultDict objectForKey:@"data"];
+            }
+            ++counter;
+            if(counter == threshold) {
+                [self.tableView reloadData];
+            }
+        } failure:^(NSString *data, NSError *error) {
+            NSLog(@"When fetching failed, data=%@, error=%@", data, error);
+            UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:@"请退回重新进入或者重新登录后再试试" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [av show];
+        }];
+    }
+}
+
+- (void) composite:(UITableViewCell *) cell at:(NSIndexPath *) indexPath
+                  with:(NSDictionary *) data {
+    NSLog(@"Compositing cell %@ at %@ with %@", cell, indexPath, data);
     NSString *authorStr=@"loading...";
     NSString *post_timeStr=@"loading...";
     NSString *floorStr=[NSString stringWithFormat:@"#%ld",(long)indexPath.row+1];
@@ -157,7 +188,7 @@ static NSString *CellIdentifier = @"postCell";
     NSInteger hasPicture=0;
     
     //赋值：
-    if (data) {
+    if (data != (id)[NSNull null]) {
         authorStr=[NSString stringWithFormat:@"%@(%@)",[data objectForKey:@"userid"],[data objectForKey:@"username"]];
         post_timeStr=[self formatTime:[[data objectForKey:@"post_time"]doubleValue]];
         floorStr=[NSString stringWithFormat:@"#%ld",(long)indexPath.row+1];
@@ -197,7 +228,6 @@ static NSString *CellIdentifier = @"postCell";
 //    tempPostFeeds=[[NSMutableArray alloc]init];
 //    //postFeed=[[NSDictionary alloc]init];
 //    //NSString *nomalStr=[NSString stringWithFormat:@"更新于%@",lastUpdated];
-//    loadingCell=[[LoadingCell alloc]initWithNormalStr:@"上拉刷新" andLoadingStr:@"数据加载中.." andStartViewStr:@"可下拉刷新.."];
 //    dateFormatter=[[NSDateFormatter alloc] init];
 //    [dateFormatter setDateFormat:@"yyyy/MM/dd, HH:mm"];
 //    lastUpdated=[NSString stringWithFormat:@"上次更新时间 %@",
@@ -696,18 +726,16 @@ static NSString *CellIdentifier = @"postCell";
 //
 
 //返回行高
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.row<[postList count] && postList[indexPath.row]!=[NSNull null]) {
         return [self getTheHeight:indexPath.row];
-    }else{
+    } else {
         return 100;
     }
 }
 
 //计算行高
--(CGFloat) getTheHeight:(NSInteger)row
-{
+-(CGFloat) getTheHeight:(NSInteger)row {
     // 显示的内容
     NSString *rawcontentStr=[postList[row] objectForKey:@"rawcontent"];
     
@@ -729,176 +757,167 @@ static NSString *CellIdentifier = @"postCell";
 }
 //
 //
-//- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//    if(postFeeds&&[postFeeds count]) {
-//        return  UITableViewCellEditingStyleDelete;  //返回此值时,Cell会做出响应显示Delete按键,点击Delete后会调用下面的函数,别给传递UITableViewCellEditingStyleDelete参数
-//    }else{
-//        return  UITableViewCellEditingStyleNone;   //返回此值时,Cell上不会出现Delete按键,即Cell不做任何响应
-//    }
-//}
-//
-//
-////删帖操作
-//- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//    // 如果UItableView对象请求的是删除操作。。。
-//    if (editingStyle==UITableViewCellEditingStyleDelete) {
-//        if (postFeeds&&[postFeeds count]) {
-//            if ([Config Instance].isLogin==1) {
-//                if ([[postFeeds[indexPath.row]objectForKey:@"perm_del"]integerValue]==1) {
-//                    
-//                    //初始化loadingHud
-//                    MBProgressHUD *loadingHud=[[MBProgressHUD alloc]initWithView:self.view];
-//                    [self.view addSubview:loadingHud];
-//                    loadingHud.delegate=self;
-//                    loadingHud.labelText=@"删帖中..";
-//                    //初始化completedHud
-//                    MBProgressHUD *completedHud=[[MBProgressHUD alloc]initWithView:self.view];
-//                    [self.view addSubview:completedHud];
-//                    completedHud.customView=[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"37x-Checkmark.png"]];
-//                    completedHud.mode=MBProgressHUDModeCustomView;
-//                    completedHud.delegate=self;
-//                    completedHud.labelText=@"删帖成功！";
-//                    
-//                    [loadingHud show:YES];
-//                    
-//                    [[DataManager manager] deletePostByBoard:boardName andFile:postTopicList[indexPath.row] success:^(NSDictionary *resultDict){
-//                        int success=[[resultDict objectForKey:@"success"]intValue];
-//                        if (success==1) {
-//                            [postFeeds removeObjectAtIndex:indexPath.row];
-//                            [postTopicList removeObjectAtIndex:indexPath.row];
-//
-//                            [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-//                            
-//                            //马上隐藏loadingHud:
-//                            [loadingHud hide:YES afterDelay:0];
-//                            //提示登录成功:
-//                            [completedHud show:YES];
-//                            //停留1秒后消失
-//                            [completedHud hide:YES afterDelay:1.0];
-//                            
-//                        } else {
-//                            //马上隐藏loadingHud:
-//                            [loadingHud hide:YES afterDelay:0];
-//                            
-//                            UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"删帖失败" message:@"稍后可再试试" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//                            [av show];
-//                        }
-//                    }failure:^(NSString *info, NSError *error){
-//                        // TODO: show the info
-//                        //NSLog(@"Failure: %@", operation.error);
-//                        //马上隐藏loadingHud:
-//                        [loadingHud hide:YES afterDelay:0];
-//                        
-//                        UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//                        [av show];
-//                        
-//                    }];
-//                    loadingHud=nil;
-//                    completedHud=nil;
-//                    
-//                } else {
-//                    UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"提示" message:@"你无权删除此帖！" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//                    [av show];
-//                }
-//            }else if ([Config Instance].isLogin==0){
-//                UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"提示" message:@"你未登录，无权执行此操作！" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//                [av show];
-//            }
-//        }else{
-//            UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:@"try again" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-//            [av show];
-//        }
-//    }
-//}
-//
-//#pragma mark - Navigation
-//
-//// In a storyboard-based application, you will often want to do a little preparation before navigation
-//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-//    UIButton *btn = (UIButton *)sender;
-//    UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];;
-//    //先判断系统版本，8.0以下系统会有不一样的表现(?):
-//    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 8.0) {
-//        view = (UITableViewCell *)[view superview];
-//    }
-//    NSIndexPath *indexPath = [self.tableView indexPathForCell:view];
-//    
-//    // Get the new view controller using [segue destinationViewController].
-//    // Pass the selected object to the new view controller.
-//    if ([segue.identifier isEqualToString:@"replyPost"]) {
-//        AddPostViewController *addPostViewController=segue.destinationViewController;
-//        if (postFeeds&&[postFeeds count]) {
-//            addPostViewController.type=@"reply";
-//            addPostViewController.titleStr=[self formatReplyingTitle:[postFeeds[indexPath.row]objectForKey:@"title"]];
-//            addPostViewController.boardName=self.boardName;
-//            addPostViewController.rawcontent=[NSString stringWithFormat:@"【在%@（%@）的大作中提到：】\n%@",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"],[self formatQuotingContent:[postFeeds[indexPath.row] objectForKey:@"rawcontent"]]];
-//            //可选参数赋值空字符串：
-//            addPostViewController.articleid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row] objectForKey:@"filename"]];
-//            //addPostViewController.attach=@"";
-//            //发帖页面title:
-//            addPostViewController.viewTitleStr=@"评论";
-//        } else {
-//            addPostViewController.type=@"reply";
-//            addPostViewController.titleStr=@"";
-//            addPostViewController.boardName=self.boardName;
-//            addPostViewController.rawcontent=@"";
-//            addPostViewController.articleid=@"";
-//            addPostViewController.viewTitleStr=@"出错了，请退回重新进入";
-//        }
-//        
-//        addPostViewController=nil;
-//        
-//    }
-//    if ([segue.identifier isEqualToString:@"showUserInfo"]) {
-//        UserQueryViewController *userQueryViewController=segue.destinationViewController;
-//        if (postFeeds&&[postFeeds count]) {
-//            userQueryViewController.userid=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"userid"]];
-//            userQueryViewController.navigationItem.title=[NSString stringWithFormat:@"%@(%@)",[postFeeds[indexPath.row]objectForKey:@"userid"],[postFeeds[indexPath.row] objectForKey:@"username"]];
-//        } else {
-//            userQueryViewController.userid=@"";
-//            userQueryViewController.navigationItem.title=@"出错了，请退回重新进入";
-//        }
-//        userQueryViewController=nil;
-//    }
-//    
-//    if ([segue.identifier isEqualToString:@"showPicture"]) {
-//        
-//        AttachPictureViewController *attachPictureViewController=segue.destinationViewController;
-//        if (postFeeds&&[postFeeds count]) {
-//            attachPictureViewController.fileTimeStr=[NSString stringWithFormat:@"%@",[postFeeds[indexPath.row]objectForKey:@"post_time"]];
-//            attachPictureViewController.boardName=self.boardName;
-//        } else {
-//            attachPictureViewController.fileTimeStr=@"";
-//            attachPictureViewController.navigationItem.title=@"出错了，请退回重新进入";
-//        }
-//        attachPictureViewController=nil;
-//    }
-//    
-//    btn=nil;
-//    view=nil;
-//    indexPath=nil;
-//}
-//
-//- (NSString*) formatReplyingTitle:(NSString*) originalTitle {
-//    NSString* format= ([originalTitle hasPrefix:@"Re: "])?@"%@":@"Re: %@";
-//    return [NSString stringWithFormat:format,originalTitle];
-//}
-//
-//- (NSString*) formatQuotingContent:(NSString*) originalContent {
-//    NSLog(@"%@", originalContent);
-//    NSMutableString* formatedContent = [[NSMutableString alloc] init];
-//    NSArray* array=[originalContent componentsSeparatedByString:@"\n"];
-//    // The first and last line breakers shall be ignored.
-//    for (int iter = 1; iter < [array count]-1; ++iter) {
-//        if ([[array objectAtIndex:iter] hasPrefix:@": "])
-//            break;
-//        [formatedContent appendString:@": "];
-//        [formatedContent appendString:[array objectAtIndex:iter]];
-//        [formatedContent appendString:@"\n"];
-//    }
-//    return formatedContent;
-//}
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if(postList&&[postList count]) {
+        NSLog(@"cell is deletable?!");
+        return  UITableViewCellEditingStyleDelete;  //返回此值时,Cell会做出响应显示Delete按键,点击Delete后会调用下面的函数,别给传递UITableViewCellEditingStyleDelete参数
+    } else {
+        NSLog(@"cell is non-deletable?!");
+        return  UITableViewCellEditingStyleNone;   //返回此值时,Cell上不会出现Delete按键,即Cell不做任何响应
+    }
+}
+
+//删帖操作
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    // 如果UItableView对象请求的是删除操作。。。
+    if (editingStyle==UITableViewCellEditingStyleDelete) {
+        if (postList&&[postList count]) {
+            if ([Config Instance].isLogin==1) {
+                if ([[postList[indexPath.row]objectForKey:@"perm_del"]integerValue]==1) {
+                    
+                    //初始化loadingHud
+                    MBProgressHUD *loadingHud=[[MBProgressHUD alloc]initWithView:self.view];
+                    [self.view addSubview:loadingHud];
+                    loadingHud.delegate=self;
+                    loadingHud.labelText=@"删帖中..";
+                    //初始化completedHud
+                    MBProgressHUD *completedHud=[[MBProgressHUD alloc]initWithView:self.view];
+                    [self.view addSubview:completedHud];
+                    completedHud.customView=[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"37x-Checkmark.png"]];
+                    completedHud.mode=MBProgressHUDModeCustomView;
+                    completedHud.delegate=self;
+                    completedHud.labelText=@"删帖成功！";
+                    
+                    [loadingHud show:YES];
+                    
+                    [[DataManager manager] deletePostByBoard:boardName andFile:postTopicList[indexPath.row] success:^(NSDictionary *resultDict){
+                        int success=[[resultDict objectForKey:@"success"]intValue];
+                        if (success==1) {
+                            [postList removeObjectAtIndex:indexPath.row];
+                            [postTopicList removeObjectAtIndex:indexPath.row];
+
+                            [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+                            
+                            //马上隐藏loadingHud:
+                            [loadingHud hide:YES afterDelay:0];
+                            //提示登录成功:
+                            [completedHud show:YES];
+                            //停留1秒后消失
+                            [completedHud hide:YES afterDelay:1.0];
+                            
+                        } else {
+                            //马上隐藏loadingHud:
+                            [loadingHud hide:YES afterDelay:0];
+                            
+                            UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"删帖失败" message:@"稍后可再试试" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                            [av show];
+                        }
+                    }failure:^(NSString *info, NSError *error){
+                        // TODO: show the info
+                        //NSLog(@"Failure: %@", operation.error);
+                        //马上隐藏loadingHud:
+                        [loadingHud hide:YES afterDelay:0];
+                        
+                        UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:[error localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                        [av show];
+                        
+                    }];
+                    loadingHud=nil;
+                    completedHud=nil;
+                    
+                } else {
+                    UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"提示" message:@"你无权删除此帖！" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                    [av show];
+                }
+            }else if ([Config Instance].isLogin==0){
+                UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"提示" message:@"你未登录，无权执行此操作！" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [av show];
+            }
+        }else{
+            UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:@"try again" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [av show];
+        }
+    }
+}
+
+#pragma mark - Navigation
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    UIButton *btn = (UIButton *)sender;
+    UITableViewCell *view = (UITableViewCell *)[[btn superview] superview];;
+    //先判断系统版本，8.0以下系统会有不一样的表现(?):
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 8.0) {
+        view = (UITableViewCell *)[view superview];
+    }
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:view];
+    
+    if ([segue.identifier isEqualToString:@"replyPost"]) {
+        AddPostViewController *addPostViewController=segue.destinationViewController;
+        addPostViewController.type=@"reply";
+        addPostViewController.boardName = self.boardName;
+        if (postList&&[postList count]) {
+            addPostViewController.titleStr = [self formatReplyingTitle:[postList[indexPath.row]objectForKey:@"title"]];
+            addPostViewController.rawcontent = [NSString stringWithFormat:@"【在%@（%@）的大作中提到：】\n%@",[postList[indexPath.row]objectForKey:@"userid"],[postList[indexPath.row] objectForKey:@"username"],[self formatQuotingContent:[postList[indexPath.row] objectForKey:@"rawcontent"]]];
+            //可选参数赋值空字符串：
+            addPostViewController.articleid = [NSString stringWithFormat:@"%@",[postList[indexPath.row] objectForKey:@"filename"]];
+            //发帖页面title:
+            addPostViewController.viewTitleStr=@"评论";
+        } else {
+            addPostViewController.titleStr=@"";
+            addPostViewController.rawcontent=@"";
+            addPostViewController.articleid=@"";
+            addPostViewController.viewTitleStr=@"出错了，请退回重新进入";
+        }
+        addPostViewController=nil;
+    }
+    if ([segue.identifier isEqualToString:@"showUserInfo"]) {
+        UserQueryViewController *userQueryViewController=segue.destinationViewController;
+        if (postList&&[postList count]) {
+            userQueryViewController.userid=[NSString stringWithFormat:@"%@",[postList[indexPath.row]objectForKey:@"userid"]];
+            userQueryViewController.navigationItem.title=[NSString stringWithFormat:@"%@(%@)",[postList[indexPath.row]objectForKey:@"userid"],[postList[indexPath.row] objectForKey:@"username"]];
+        } else {
+            userQueryViewController.userid=@"";
+            userQueryViewController.navigationItem.title=@"出错了，请退回重新进入";
+        }
+        userQueryViewController=nil;
+    }
+    
+    if ([segue.identifier isEqualToString:@"showPicture"]) {
+        
+        AttachPictureViewController *attachPictureViewController=segue.destinationViewController;
+        if (postList&&[postList count]) {
+            attachPictureViewController.fileTimeStr=[NSString stringWithFormat:@"%@",[postList[indexPath.row]objectForKey:@"post_time"]];
+            attachPictureViewController.boardName=self.boardName;
+        } else {
+            attachPictureViewController.fileTimeStr=@"";
+            attachPictureViewController.navigationItem.title=@"出错了，请退回重新进入";
+        }
+        attachPictureViewController=nil;
+    }
+    
+    btn=nil;
+    view=nil;
+    indexPath=nil;
+}
+
+- (NSString*) formatReplyingTitle:(NSString*) originalTitle {
+    NSString* format= ([originalTitle hasPrefix:@"Re: "] || [originalTitle hasPrefix:@"re: "])?@"%@":@"Re: %@";
+    return [NSString stringWithFormat:format,originalTitle];
+}
+
+- (NSString*) formatQuotingContent:(NSString*) originalContent {
+    NSLog(@"%@", originalContent);
+    NSMutableString* formatedContent = [[NSMutableString alloc] init];
+    NSArray* array=[originalContent componentsSeparatedByString:@"\n"];
+    // The first and last line breakers shall be ignored.
+    for (int iter = 1; iter < [array count]-1; ++iter) {
+        if ([[array objectAtIndex:iter] hasPrefix:@": "])
+            break;
+        [formatedContent appendString:@": "];
+        [formatedContent appendString:[array objectAtIndex:iter]];
+        [formatedContent appendString:@"\n"];
+    }
+    return formatedContent;
+}
 
 @end
