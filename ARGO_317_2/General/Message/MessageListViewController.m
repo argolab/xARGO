@@ -414,20 +414,17 @@
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-    NSIndexPath *indexPath = [self._tableView indexPathForSelectedRow];
-    if ([[NSString stringWithFormat:@"%@",[postList[indexPath.row]objectForKey:@"type"]]isEqualToString:@"b"]) {
-        
-    }else{
-        PostListViewController *postViewController= segue.destinationViewController;
-        
-        if ([segue.identifier isEqualToString:@"showPostViewFromMessageListView"]) {
+    if ([segue.identifier isEqualToString:@"showPostViewFromMessageListView"]) {
+        // Get the new view controller using [segue destinationViewController].
+        // Pass the selected object to the new view controller.
+        NSIndexPath *indexPath = [self._tableView indexPathForSelectedRow];
+        if ([[NSString stringWithFormat:@"%@",[postList[indexPath.row]objectForKey:@"type"]]isEqualToString:@"b"]) {
             
-            
+        }else{
+            PostListViewController *postViewController= segue.destinationViewController;
             postViewController.boardName=[postList[indexPath.row]objectForKey:@"board"];
             if (postList&&[postList count]) {
-                postViewController.fileName=[self.postList[indexPath.row]objectForKey:@"filename"];
+                postViewController.fileName = [self.postList[indexPath.row]objectForKey:@"filename"];
                 postViewController.navigationItem.title=@"提醒详情";
                 
                 //标记提醒已读：
@@ -436,24 +433,13 @@
                 NSString *urlString=[NSString stringWithFormat:@"http://argo.sysu.edu.cn/ajax/message/mark"];
                 NSDictionary *param=@{@"index":postIndexNumber};
                 [[AFHTTPRequestOperationManager manager] POST:urlString parameters:param success:nil failure:nil];
-                
-                
-                
             }else{
                 postViewController.fileName=@"";
                 postViewController.navigationItem.title=@"请退回重新进入";
             }
-            
             postViewController=nil;//important!否则如果持续使用会导致内存被塞满
             indexPath=nil;
-            
         }
     }
-    
-    
-    
 }
-
-
-
 @end
