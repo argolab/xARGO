@@ -859,7 +859,7 @@
 				ORGANIZATIONNAME = "490021684@qq.com";
 				TargetAttributes = {
 					B0C3D86518D6F421004B5F9F = {
-						DevelopmentTeam = FG2DXVNB5P;
+						DevelopmentTeam = 38A6JF2N52;
 					};
 				};
 			};

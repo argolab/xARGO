@@ -7,3 +7,6 @@
 */
 "welcome"="Click on the screen to continue...";
 "MSG_NETWORK_FAILURE"="网络错误。如果您多次看到此提示，请尝试使用浏览器访问http://argo.sysu.edu.cn/";
+"Post not exists."="该贴不存在";
+"Error"="出错了";
+"Reason:"="错误原因：";

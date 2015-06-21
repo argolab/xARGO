@@ -8,7 +8,7 @@
 // This contains a 3-stages lazy load:
 // 1. No data.
 // 2. List ready.
-// 3. Rendering cell when visible.
+// 3. Rendering cells in page.
 
 #import "PostListViewController.h"
 #import "AddPostViewController.h"
@@ -23,21 +23,38 @@
 #define floorTag        4
 #define hasPictureTag   5
 
-static long batchCount = 3;
+static int pageSize = 10;
 
 static NSString *CellIdentifier = @"postCell";
 
-@implementation PostListViewController
+@implementation PostListViewController {
+    int currentPage;
+}
 @synthesize boardName,fileName;
 @synthesize postTopicList,postList;
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+
+// -------------------------------------------------------------------------------
+//  viewDidLoad
+// -------------------------------------------------------------------------------
+- (void)viewDidLoad
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        
-    }
-    return self;
+    [super viewDidLoad];
+    dateFormatter = [[NSDateFormatter alloc] init];
+    dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"Asia/beijing"];
+    dateFormatter.dateFormat=@"yyyy/MM/dd, HH:mm";
+    loadingCell=[[LoadingCell alloc]initWithNormalStr:@"上拉刷新" andLoadingStr:@"数据加载中.." andStartViewStr:@"可下拉刷新.."];
+    [loadingCell loading];
+    
+    currentPage = 0;
+    // Load list asynchously.
+    [self initTopicList];
+    UIRefreshControl *refresh=[[UIRefreshControl alloc]init];
+    refresh.tintColor=[UIColor lightGrayColor];
+    refresh.attributedTitle=[[NSAttributedString alloc]initWithString:@"下拉刷新"];
+    [refresh addTarget:self action:@selector(refreshView:) forControlEvents:UIControlEventValueChanged];
+    self.refreshControl = refresh;
+    
 }
 
 -(void) initTopicList {
@@ -57,41 +74,23 @@ static NSString *CellIdentifier = @"postCell";
                     [postTopicList addObject:[data objectAtIndex:i]];
                 }
             }
-            //记录数据加载时间
-            lastUpdated=[NSString stringWithFormat:@"更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
-            [self fetchInBatch:0 count: batchCount];
-            [loadingCell normal];
-            loadingCell.label.text=[NSString stringWithFormat:@"%@",lastUpdated];
-            [self.refreshControl endRefreshing];
+            [self loadNextPage];
         }
     } failure:^(NSString *data, NSError *error) {
         // failed?
         NSLog(@"Loading failed.");
+        NSString* errorMsg = NSLocalizedString([error.userInfo objectForKey:@"error"],@"");
+        [loadingCell normal];
+        loadingCell.label.text = [NSString stringWithFormat:@"%@%@",NSLocalizedString(@"Reason:", @""), errorMsg];
+        UIAlertView *av = [[UIAlertView alloc]initWithTitle:NSLocalizedString(@"Error",@"") message: [NSString stringWithFormat:@"%@%@",NSLocalizedString(@"Reason:", @""), errorMsg] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [av show];
     }
      ];
-    
 }
 
-// -------------------------------------------------------------------------------
-//  viewDidLoad
-// -------------------------------------------------------------------------------
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    dateFormatter = [[NSDateFormatter alloc] init];
-    dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"Asia/beijing"];
-    dateFormatter.dateFormat=@"yyyy/MM/dd, HH:mm";
-    loadingCell=[[LoadingCell alloc]initWithNormalStr:@"上拉刷新" andLoadingStr:@"数据加载中.." andStartViewStr:@"可下拉刷新.."];
+-(void) loadNextPage {
     [loadingCell loading];
-    
-    // Load list asynchously.
-    [self initTopicList];
-    UIRefreshControl *refresh=[[UIRefreshControl alloc]init];
-    refresh.tintColor=[UIColor lightGrayColor];
-    refresh.attributedTitle=[[NSAttributedString alloc]initWithString:@"下拉刷新"];
-    [refresh addTarget:self action:@selector(refreshView:) forControlEvents:UIControlEventValueChanged];
-    self.refreshControl = refresh;
-    
+    [self fetchInBatch:currentPage*pageSize count:pageSize];
 }
 
 //下拉刷新调用的方法
@@ -110,78 +109,51 @@ static NSString *CellIdentifier = @"postCell";
 {
     [postTopicList removeAllObjects];
     [loadingCell loading];
+    currentPage = 0;
 }
 
-// -------------------------------------------------------------------------------
-//  didReceiveMemoryWarning
-// -------------------------------------------------------------------------------
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
 
-#pragma mark - UITableViewDataSource
-
-// -------------------------------------------------------------------------------
-//  tableView:numberOfRowsInSection:
-//  Customize the number of rows in the table view.
-// -------------------------------------------------------------------------------
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Always there is a loading cell.
-    return self.postTopicList.count + 1;
+    return [self numberOfRows] + 1;
 }
 
-// -------------------------------------------------------------------------------
-//  tableView:cellForRowAtIndexPath:
-// -------------------------------------------------------------------------------
+-(NSInteger) numberOfRows {
+    return MIN(currentPage * pageSize, self.postTopicList.count);
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = nil;
-    
-    NSUInteger nodeCount = self.postTopicList.count;
-    
-    if (nodeCount == indexPath.row) {
+
+    if ([self numberOfRows] == indexPath.row) {
         // for the last row always return loading cell.
         return loadingCell.cell;
     }
     
     cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
-    
+
     NSDictionary *post = (self.postList)[indexPath.row];
     [self composite:cell at:indexPath with:post];
-    
-    if(post == (id)[NSNull null]) {
-        NSLog(@"Going to fetch:%@",[postTopicList objectAtIndex:indexPath.row]);
-        
-        [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:indexPath.row] success:^(NSDictionary *resultDict) {
-            NSLog(@"On fetching successfully:%@",[[resultDict objectForKey:@"data"] objectForKey:@"filename"]);
-            if ([resultDict objectForKey:@"data"]&&[[resultDict objectForKey:@"data"]isKindOfClass:[NSDictionary class]]) {
-                self.postList[indexPath.row]=[resultDict objectForKey:@"data"];
-                [self composite:cell at:indexPath with:self.postList[indexPath.row]];
-            }
-            NSLog(@"TableView rows=%ld",(long)[tableView numberOfRowsInSection:0]);
-            NSLog(@"Going to reload row=%@",indexPath);
-            NSLog(@"The cell=%@",[tableView cellForRowAtIndexPath:indexPath]);
-            if([tableView cellForRowAtIndexPath:indexPath]) {                                                                            [tableView beginUpdates];
-                [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-                [tableView endUpdates];
-            }
-            
-            
-        } failure:^(NSString *data, NSError *error) {
-            NSLog(@"When fetching failed.");
-        }];
-    }
-    
     NSLog(@"Returning cell=%@",cell);
     return cell;
 }
 
--(void) fetchInBatch:(long) from count:(long) count {
+-(void) fetchInBatch:(int) from count:(int) count {
     assert(postTopicList.count > 0);
     assert(count >= 0);
     __block int counter = 0;
-    unsigned long threshold = MIN(count, postTopicList.count - from);
-    NSLog(@"Going to fetch next %ld from %ld", count, from);
-    for (int i = 0; i < threshold; ++i) {
+    int threshold = MIN(count, (int)postTopicList.count - from);
+    if (threshold < 0) {
+        // No more data now.
+        lastUpdated=[NSString stringWithFormat:@"更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
+        [loadingCell normal];
+        loadingCell.label.text=[NSString stringWithFormat:@"%@",lastUpdated];
+    }
+    NSLog(@"Going to fetch next %d from %d", count, from);
+    for (int i = from; i < from + threshold; ++i) {
         NSLog(@"Going to fetch :%@", [postTopicList objectAtIndex:i]);
         [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:i] success:^(NSDictionary *resultDict) {
             NSLog(@"On fetching successfully:%@",[[resultDict objectForKey:@"data"] objectForKey:@"filename"]);
@@ -190,6 +162,14 @@ static NSString *CellIdentifier = @"postCell";
             }
             ++counter;
             if(counter == threshold) {
+                currentPage++;
+                [loadingCell normal];
+                if (postTopicList.count <= from + threshold) {
+                    lastUpdated=[NSString stringWithFormat:@"更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
+                    loadingCell.label.text=[NSString stringWithFormat:@"%@",lastUpdated];
+                } else {
+                    loadingCell.label.text=[NSString stringWithFormat:@"下面还有%lu贴，轻轻上拉继续看",(unsigned long)postTopicList.count-from-threshold];
+                }
                 [self.tableView reloadData];
             }
         } failure:^(NSString *data, NSError *error) {
@@ -240,10 +220,10 @@ static NSString *CellIdentifier = @"postCell";
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     //触发上拉加载更多的条件
-    if(scrollView.contentSize.height - (scrollView.contentOffset.y + scrollView.bounds.size.height - scrollView.contentInset.bottom) <= -REFRESH_HEADER_HEIGHT && scrollView.contentOffset.y > 0){
+    if(scrollView.contentSize.height - (scrollView.contentOffset.y + scrollView.bounds.size.height - scrollView.contentInset.bottom) <= -REFRESH_HEADER_HEIGHT && scrollView.contentOffset.y > 0) {
         //如果是提醒详情，则不需要上拉加载更多
         if ([self.navigationItem.title isEqualToString:@"提醒详情"]==NO) {
-//            [self performSelector:@selector(loadMorePostFeed) withObject:nil afterDelay:0];
+            [self loadNextPage];
         }
     }
     
@@ -254,7 +234,7 @@ static NSString *CellIdentifier = @"postCell";
     if (indexPath.row<[postList count] && postList[indexPath.row]!=[NSNull null]) {
         return [self getTheHeight:indexPath.row];
     } else {
-        return 100;
+        return 50;
     }
 }
 
@@ -274,9 +254,9 @@ static NSString *CellIdentifier = @"postCell";
     
     // 返回需要的高度,这里的判断不需要那么严格
     if ([[postList[row]objectForKey:@"ah"]count]==0) {
-        return height+58;
+        return height+28;
     } else {
-        return height+88;
+        return height+38;
     }
 }
 

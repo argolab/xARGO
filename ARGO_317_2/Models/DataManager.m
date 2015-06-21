@@ -31,6 +31,7 @@ NSString * const ARGO_POST_DELETE_URL           = @"http://argo.sysu.edu.cn/ajax
 
 
 NSString * const MSG_NETWORK_FAILURE            = @"MSG_NETWORK_FAILURE";
+NSString * const MSG_BUSINESS_FAILURE           = @"MSG_BUSINESS_FAILURE";
 
 DataManager *manager;
 
@@ -59,7 +60,13 @@ DataManager *manager;
     
     [[AFHTTPRequestOperationManager manager] GET:url parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [self.postCache setObject:responseObject forKey:cacheKey];
-        success(responseObject);
+        NSError* error = [self isSuccessfulJsonResponse:responseObject];
+        if (!error) {
+            success(responseObject);
+        } else {
+            NSError* error = [NSError errorWithDomain:@"" code:123 userInfo:responseObject];
+            failure(NSLocalizedString(MSG_BUSINESS_FAILURE, MSG_NETWORK_FAILURE_KEY),error);
+        }
     } failure: ^(AFHTTPRequestOperation *operation, NSError *error) {
         failure(NSLocalizedString(MSG_NETWORK_FAILURE, MSG_NETWORK_FAILURE_KEY),error);
     }];
@@ -71,10 +78,29 @@ DataManager *manager;
                 success:(void (^)(NSDictionary *resultDict))success
                 failure:(void (^)(NSString *data, NSError *error))failure; {
     [[AFHTTPRequestOperationManager manager] GET:url parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        success(responseObject);
+        NSError* error = [self isSuccessfulJsonResponse:responseObject];
+        if (!error) {
+            success(responseObject);
+        } else {
+            failure(NSLocalizedString(MSG_BUSINESS_FAILURE, @""), error);
+        }
     } failure: ^(AFHTTPRequestOperation *operation, NSError *error) {
         failure(NSLocalizedString(MSG_NETWORK_FAILURE, MSG_NETWORK_FAILURE_KEY),error);
     }];
+}
+
+-(NSError*) isSuccessfulJsonResponse: (id) responseObject {
+    if ([responseObject isKindOfClass:[NSDictionary class]]) {
+        NSDictionary* jsonDict = (NSDictionary*) responseObject;
+        if ([[jsonDict objectForKey:@"success"] isEqual:@"1"] ||
+            [[jsonDict objectForKey:@"success"] isEqual:@(1)] ||
+            [jsonDict objectForKey:@"data"] ){
+            return nil;
+        }
+        return [NSError errorWithDomain:@"" code:[[jsonDict objectForKey:@"code"] integerValue] userInfo:responseObject];
+    }
+    // Should not happen.
+    return [NSError errorWithDomain:@"" code:404 userInfo:responseObject];
 }
 
 - (void)getAllSections:(void (^)(NSDictionary *resultDict)) success

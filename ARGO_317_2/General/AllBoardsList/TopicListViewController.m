@@ -45,7 +45,7 @@
     // NSLog(@"Post List.");
     if (self.boardName && self.boardTitle) {
         [[DataManager manager] getBoardByBoardName:boardname success:^(NSDictionary *data){
-            // NSLog(@"Dictionary: %@", [data description]);
+             // NSLog(@"Dictionary: %@", [data description]);
             
             total_topicNum=[[[data objectForKey:@"data"] objectForKey:@"total_topic"]integerValue];
             //记录下拉刷新时间：
