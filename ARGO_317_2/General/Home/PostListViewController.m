@@ -9,6 +9,7 @@
 // 1. No data.
 // 2. List ready.
 // 3. Rendering cells in page.
+// 4. Scroll to the high water mark
 
 #import "PostListViewController.h"
 #import "AddPostViewController.h"
@@ -60,22 +61,18 @@ static NSString *CellIdentifier = @"postCell";
 -(void) initTopicList {
     postTopicList = [[NSMutableArray alloc]init];
     [loadingCell loading];
-    [[DataManager manager] getPostsPerTopicByBoardName:boardName andFile:fileName success:^(NSDictionary *resultDict){
-        NSLog(@"On getting topic successfully.");
-        int success=[[resultDict objectForKey:@"success"]intValue];
-        if (success==1) {
-            NSArray *data=[resultDict objectForKey:@"data"];
-            NSLog(@"Dictionary: %@", [data description]);
-            postList = [NSMutableArray arrayWithCapacity:[data count]];
-            for (int i=0; i<[data count]; i++) {
-                if ([data objectAtIndex:i]) {
-                    // init postList before postTopicList to avoid NilException. Should be done in a better way?
-                    [postList addObject:[NSNull null]];
-                    [postTopicList addObject:[data objectAtIndex:i]];
-                }
+    [[DataManager manager] getPostsPerTopicByBoardName:boardName andFile:fileName success:^(NSDictionary *resultDict) {
+        //NSLog(@"On getting topic successfully.");
+        NSArray *data=[resultDict objectForKey:@"data"];
+        //NSLog(@"Dictionary: %@", [data description]);
+        postList = [NSMutableArray arrayWithCapacity:[data count]];
+        for (int i=0; i<[data count]; i++) {
+            if ([data objectAtIndex:i]) {
+                [postList addObject:[NSNull null]];
+                [postTopicList addObject:[data objectAtIndex:i]];
             }
-            [self loadNextPage];
         }
+        [self loadUntilHighWaterMark];
     } failure:^(NSString *data, NSError *error) {
         // failed?
         NSLog(@"Loading failed.");
@@ -88,25 +85,29 @@ static NSString *CellIdentifier = @"postCell";
      ];
 }
 
+-(void) loadUntilHighWaterMark {
+    [loadingCell loading];
+    int highWaterMark = [[DataManager manager] getHighWaterMark:boardName andFile:fileName];
+    [self fetchInBatch:0 numberOfPages:highWaterMark/pageSize + 1 didFinished:^{
+        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[[DataManager manager] getHighWaterMark:boardName andFile:fileName] inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:NO];
+    }];
+}
+
 -(void) loadNextPage {
     [loadingCell loading];
-    [self fetchInBatch:currentPage*pageSize count:pageSize];
+    [self fetchInBatch:currentPage*pageSize numberOfPages:1 didFinished:nil];
 }
 
 //下拉刷新调用的方法
--(void)refreshView:(UIRefreshControl *)refresh
-{
+-(void)refreshView:(UIRefreshControl *)refresh {
     if (refresh.refreshing) {
         refresh.attributedTitle = [[NSAttributedString alloc] initWithString:lastUpdated];
-
         [self clear];
         [self initTopicList];
-        [self.tableView reloadData];
     }
 }
 
-- (void)clear
-{
+- (void)clear {
     [postTopicList removeAllObjects];
     [loadingCell loading];
     currentPage = 0;
@@ -132,37 +133,37 @@ static NSString *CellIdentifier = @"postCell";
         // for the last row always return loading cell.
         return loadingCell.cell;
     }
-    
+
     cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
 
     NSDictionary *post = (self.postList)[indexPath.row];
     [self composite:cell at:indexPath with:post];
-    NSLog(@"Returning cell=%@",cell);
+    [[DataManager manager] setHighWaterMark:boardName andFile:fileName mark:(int)indexPath.row];
+    //NSLog(@"Returning cell=%@",cell);
     return cell;
 }
 
--(void) fetchInBatch:(int) from count:(int) count {
+-(void) fetchInBatch:(int) from numberOfPages:(int) num didFinished:(void (^) ())didFinished {
     assert(postTopicList.count > 0);
-    assert(count >= 0);
+    assert(num >= 0);
     __block int counter = 0;
-    int threshold = MIN(count, (int)postTopicList.count - from);
+    int threshold = MIN(num*pageSize, (int)postTopicList.count - from);
     if (threshold < 0) {
         // No more data now.
         lastUpdated=[NSString stringWithFormat:@"更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
-        [loadingCell normal];
         loadingCell.label.text=[NSString stringWithFormat:@"%@",lastUpdated];
     }
-    NSLog(@"Going to fetch next %d from %d", count, from);
+    //NSLog(@"Going to fetch next %d from %d", count, from);
     for (int i = from; i < from + threshold; ++i) {
-        NSLog(@"Going to fetch :%@", [postTopicList objectAtIndex:i]);
-        [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:i] success:^(NSDictionary *resultDict) {
-            NSLog(@"On fetching successfully:%@",[[resultDict objectForKey:@"data"] objectForKey:@"filename"]);
+        //NSLog(@"Going to fetch :%@", [postTopicList objectAtIndex:i]);
+        [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:i] forceReload:NO success:^(NSDictionary *resultDict) {
+            //NSLog(@"On fetching successfully:%@",[[resultDict objectForKey:@"data"] objectForKey:@"filename"]);
             if ([resultDict objectForKey:@"data"]&&[[resultDict objectForKey:@"data"]isKindOfClass:[NSDictionary class]]) {
                 self.postList[i]=[resultDict objectForKey:@"data"];
             }
             ++counter;
             if(counter == threshold) {
-                currentPage++;
+                currentPage+=num;
                 [loadingCell normal];
                 if (postTopicList.count <= from + threshold) {
                     lastUpdated=[NSString stringWithFormat:@"更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
@@ -171,9 +172,10 @@ static NSString *CellIdentifier = @"postCell";
                     loadingCell.label.text=[NSString stringWithFormat:@"下面还有%lu贴，轻轻上拉继续看",(unsigned long)postTopicList.count-from-threshold];
                 }
                 [self.tableView reloadData];
+                if (didFinished) didFinished();
             }
         } failure:^(NSString *data, NSError *error) {
-            NSLog(@"When fetching failed, data=%@, error=%@", data, error);
+            NSLog(@"Failed when fetching post, data=%@, error=%@", data, error);
             UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"Error" message:@"请退回重新进入或者重新登录后再试试" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [av show];
         }];
@@ -182,7 +184,7 @@ static NSString *CellIdentifier = @"postCell";
 
 - (void) composite:(UITableViewCell *) cell at:(NSIndexPath *) indexPath
               with:(NSDictionary *) data {
-    NSLog(@"Compositing cell %@ at %@ with %@", cell, indexPath, data);
+    //NSLog(@"Compositing cell %@ at %@ with %@", cell, indexPath, data);
     NSString *authorStr=@"loading...";
     NSString *post_timeStr=@"loading...";
     NSString *floorStr=[NSString stringWithFormat:@"#%ld",(long)indexPath.row+1];
@@ -223,7 +225,12 @@ static NSString *CellIdentifier = @"postCell";
     if(scrollView.contentSize.height - (scrollView.contentOffset.y + scrollView.bounds.size.height - scrollView.contentInset.bottom) <= -REFRESH_HEADER_HEIGHT && scrollView.contentOffset.y > 0) {
         //如果是提醒详情，则不需要上拉加载更多
         if ([self.navigationItem.title isEqualToString:@"提醒详情"]==NO) {
-            [self loadNextPage];
+            if(currentPage*pageSize >= [self.postTopicList count]) {
+                currentPage--;
+                [self initTopicList];
+            } else {
+                [self loadNextPage];
+            }
         }
     }
     
@@ -262,10 +269,10 @@ static NSString *CellIdentifier = @"postCell";
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
     if(postList&&[postList count]) {
-        NSLog(@"cell is deletable?!");
+        //NSLog(@"cell is deletable?!");
         return  UITableViewCellEditingStyleDelete;  //返回此值时,Cell会做出响应显示Delete按键,点击Delete后会调用下面的函数,别给传递UITableViewCellEditingStyleDelete参数
     } else {
-        NSLog(@"cell is non-deletable?!");
+        //NSLog(@"cell is non-deletable?!");
         return  UITableViewCellEditingStyleNone;   //返回此值时,Cell上不会出现Delete按键,即Cell不做任何响应
     }
 }
@@ -409,7 +416,7 @@ static NSString *CellIdentifier = @"postCell";
 }
 
 - (NSString*) formatQuotingContent:(NSString*) originalContent {
-    NSLog(@"%@", originalContent);
+    //NSLog(@"%@", originalContent);
     NSMutableString* formatedContent = [[NSMutableString alloc] init];
     NSArray* array=[originalContent componentsSeparatedByString:@"\n"];
     // The first and last line breakers shall be ignored.

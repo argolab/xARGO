@@ -21,7 +21,7 @@
                success:(void (^)(NSDictionary *data))success
                failure:(void (^)(NSString *data, NSError *error))failure;
 
-- (void)getPostByBoard:(NSString *)boardName andFile:(NSString *)fileName
+- (void)getPostByBoard:(NSString *)boardName andFile:(NSString *)fileName forceReload:(BOOL) isForceReload
                         success:(void (^)(NSDictionary *data))success
                         failure:(void (^)(NSString *data, NSError *error))failure;
 
@@ -36,5 +36,8 @@
 - (void)getBoardByBoardName:(NSString *) boardname
                   success:(void (^)(NSDictionary *resultDict))success
                   failure:(void (^)(NSString *data, NSError *error))failure;
+
+- (int)getHighWaterMark:(NSString *) boardName andFile: (NSString *) fileName;
+- (void)setHighWaterMark:(NSString *) boardName andFile: (NSString *) fileName mark:(int) highWaterMark;
 
 @end

@@ -39,7 +39,7 @@ DataManager *manager;
     if(manager == nil){
         manager = [self alloc];
         manager.postCache = [[NSCache alloc] init];
-        manager.postCache.countLimit = 1000;
+        manager.postCache.countLimit = 5000;
     }
     return manager;
 }
@@ -49,9 +49,10 @@ DataManager *manager;
 - (void)getData:(NSString*) url
               withParam:(NSDictionary*) param
            withCacheKey:(NSString*) cacheKey
+          withContainer:(id)container
                 success:(void (^)(NSDictionary *resultDict))success
                 failure:(void (^)(NSString *data, NSError *error))failure; {
-    NSDictionary *resultInCache = [self.postCache objectForKey:cacheKey];
+    NSDictionary *resultInCache = [container objectForKey:cacheKey];
     if (resultInCache) {
         // NSLog(@"Cache hit!");
         success(resultInCache);
@@ -59,7 +60,7 @@ DataManager *manager;
     }
     
     [[AFHTTPRequestOperationManager manager] GET:url parameters:param success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [self.postCache setObject:responseObject forKey:cacheKey];
+        [container setObject:responseObject forKey:cacheKey];
         NSError* error = [self isSuccessfulJsonResponse:responseObject];
         if (!error) {
             success(responseObject);
@@ -106,7 +107,7 @@ DataManager *manager;
 - (void)getAllSections:(void (^)(NSDictionary *resultDict)) success
                failure:(void (^)(NSString *data, NSError *error)) failure; {
     NSString *cacheKey = @"allSection";
-    [self getData:ARGO_SECTIONS_URL withParam:nil withCacheKey:cacheKey success:success failure:failure];
+    [self getData:ARGO_SECTIONS_URL withParam:nil withCacheKey:cacheKey withContainer:[NSUserDefaults standardUserDefaults]success:success failure:failure];
 }
 
 - (void)getBoardsBySection:(NSString *) secCode
@@ -114,16 +115,20 @@ DataManager *manager;
                    failure:(void (^)(NSString *data, NSError *error))failure; {
     NSString *cacheKey=[@"section" stringByAppendingString:secCode];
     NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"sec_code":secCode}];
-    [self getData:ARGO_BOARDS_GET_BY_SECTION_URL withParam:param withCacheKey:cacheKey success:success failure:failure];
+    [self getData:ARGO_BOARDS_GET_BY_SECTION_URL withParam:param withCacheKey:cacheKey withContainer:[NSUserDefaults standardUserDefaults] success:success failure:failure];
 }
 
 - (void)getPostByBoard:(NSString *) boardName
                andFile:(NSString *) fileName
+           forceReload:(BOOL) isForceReload
                success:(void (^)(NSDictionary *resultDict))success
                failure:(void (^)(NSString *data, NSError *error))failure; {
     NSString *cacheKey=[boardName stringByAppendingString:fileName];
+    if (isForceReload) {
+        [self removeCacheByKey:cacheKey];
+    }
     NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName,@"filename":fileName}];
-    [self getData:ARGO_POST_GET_URL withParam:param withCacheKey:cacheKey success:success failure:failure];
+    [self getData:ARGO_POST_GET_URL withParam:param withCacheKey:cacheKey withContainer:self.postCache success:success failure:failure];
 }
 
 - (void) getBoardByBoardName:(NSString *) boardName
@@ -141,7 +146,7 @@ DataManager *manager;
     [self getData:ARGO_POSTS_PER_TOPIC_URL withParam:param success:success failure:failure];
 }
 
-- (void)deletePostByBoard:(NSString *) boardName
+- (void) deletePostByBoard:(NSString *) boardName
                   andFile:(NSString *) fileName
                   success:(void (^)(NSDictionary *resultDict))success
                   failure:(void (^)(NSString *data, NSError *error))failure; {
@@ -162,5 +167,17 @@ DataManager *manager;
     }];
 
 }
+- (int)getHighWaterMark:(NSString *) boardName andFile: (NSString *) fileName {
+    return [[[NSUserDefaults standardUserDefaults] objectForKey:[boardName stringByAppendingString:fileName]] intValue];
+}
 
+- (void)setHighWaterMark:(NSString *) boardName andFile: (NSString *) fileName mark:(int) highWaterMark {
+    if (highWaterMark > [self getHighWaterMark:boardName andFile:fileName])
+        [[NSUserDefaults standardUserDefaults] setObject:@(highWaterMark) forKey:[boardName stringByAppendingString:fileName]];
+}
+
+- (void) removeCacheByKey:(NSString*) cacheKey {
+    [self.postCache removeObjectForKey:cacheKey];
+    return;
+}
 @end
