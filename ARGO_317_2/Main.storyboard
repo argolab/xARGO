@@ -1527,11 +1527,8 @@
                                             </connections>
                                         </button>
                                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" minimumZoomScale="0.0" maximumZoomScale="0.0" editable="NO" text="rawcontent" translatesAutoresizingMaskIntoConstraints="NO" id="tRB-SO-6Lh">
-                                            <rect key="frame" x="15" y="30" width="300" height="191.5"/>
+                                            <rect key="frame" x="15" y="30" width="297" height="191.5"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="300" id="FSU-JY-nzW"/>
-                                            </constraints>
                                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                             <textInputTraits key="textInputTraits" autocorrectionType="no"/>
                                             <dataDetectorType key="dataDetectorTypes" link="YES"/>
@@ -1557,6 +1554,7 @@
                                         <constraint firstItem="JtO-fl-57X" firstAttribute="leading" secondItem="ph1-fT-gfS" secondAttribute="leading" constant="20" id="Aae-BZ-6ok"/>
                                         <constraint firstAttribute="bottomMargin" secondItem="tRB-SO-6Lh" secondAttribute="bottom" constant="20" id="GM3-DG-Mfm"/>
                                         <constraint firstAttribute="bottom" secondItem="JtO-fl-57X" secondAttribute="bottom" id="SdZ-AE-4e8"/>
+                                        <constraint firstItem="tRB-SO-6Lh" firstAttribute="trailing" secondItem="ph1-fT-gfS" secondAttribute="trailingMargin" id="W5M-Jc-yO0"/>
                                         <constraint firstItem="tRB-SO-6Lh" firstAttribute="top" secondItem="ph1-fT-gfS" secondAttribute="top" constant="30" id="bvL-yt-Wg2"/>
                                     </constraints>
                                 </tableViewCellContentView>
@@ -1587,10 +1585,10 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="LJV-ft-H5N"/>
-        <segue reference="TLO-Iv-2pY"/>
-        <segue reference="63l-aH-bEP"/>
         <segue reference="22l-MZ-9b5"/>
+        <segue reference="759-fz-ZUW"/>
+        <segue reference="pnT-nv-VPN"/>
+        <segue reference="63l-aH-bEP"/>
         <segue reference="EYj-UX-AS2"/>
     </inferredMetricsTieBreakers>
 </document>

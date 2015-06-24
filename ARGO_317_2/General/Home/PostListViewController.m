@@ -241,7 +241,8 @@ static NSString *CellIdentifier = @"postCell";
     if (indexPath.row<[postList count] && postList[indexPath.row]!=[NSNull null]) {
         return [self getTheHeight:indexPath.row];
     } else {
-        return 50;
+        // System default 44.
+        return 44;
     }
 }
 
@@ -259,12 +260,8 @@ static NSString *CellIdentifier = @"postCell";
     rawcontentStr=nil;
     attribute=nil;
     
-    // 返回需要的高度,这里的判断不需要那么严格
-    if ([[postList[row]objectForKey:@"ah"]count]==0) {
-        return height+28;
-    } else {
-        return height+38;
-    }
+    // textView上下constraint皆为25，合计50.
+    return height + 50;
 }
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
