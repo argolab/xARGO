@@ -6,12 +6,6 @@
 //  Copyright (c) 2014年 490021684@qq.com. All rights reserved.
 //
 
-#ifdef DEBUG
-#   define NSLog(...) NSLog(__VA_ARGS__)
-#else
-#   define NSLog(...)
-#endif
-
 #import <UIKit/UIKit.h>
 
 #import "ARGOAppDelegate.h"
