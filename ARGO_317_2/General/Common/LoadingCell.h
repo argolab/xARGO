@@ -9,14 +9,6 @@
 #import <Foundation/Foundation.h>
 
 @interface LoadingCell : NSObject
-{
-    UITableViewCell *cell;
-    UIActivityIndicatorView *indicator;
-    UILabel *label;
-}
-
-
-//@property (nonatomic, strong) IBOutlet UITableViewCell *cell;
 
 //不同的状态对应的不同文本描述
 @property (nonatomic, strong) NSString *normalStr;
@@ -25,10 +17,7 @@
 @property (nonatomic, strong) UITableViewCell *cell;
 
 @property (nonatomic, strong) UILabel *label;
-
-
-
-
+@property (nonatomic, strong) UIActivityIndicatorView *indicator;
 
 //初始化方法，设置状态文本
 -(id)initWithNormalStr:(NSString*)_normalStr andLoadingStr:(NSString*)_loadingStr andStartViewStr:(NSString*)_startViewStr;

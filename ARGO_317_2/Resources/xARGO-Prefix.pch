@@ -14,7 +14,7 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
     #import "../Vendors/AFNetworking/AFNetworking.h"
-
+    #import "DataManager.h"
 #endif
 
 #ifdef DEBUG

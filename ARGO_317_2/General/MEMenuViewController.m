@@ -8,6 +8,7 @@
 
 
 #import "MEMenuViewController.h"
+#import "Config.h"
 
 @interface MEMenuViewController ()
 
@@ -16,8 +17,6 @@
 @implementation MEMenuViewController
 
 - (IBAction)unwindToMenuViewController:(UIStoryboardSegue *)segue { }
-
-
 
 - (void)viewDidLoad{
     
@@ -28,8 +27,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noNewMessageAlert) name:@"noNewMessageAlert" object:nil];
     
     
-    //增加计时器，每三分钟获取一次数据，提醒用户有无新消息
-    //NSTimer *timer = [NSTimer timerWithTimeInterval:180.0  target:self selector:@selector(messageAlert) userInfo:nil repeats:YES];
+    //增加计时器，每一分钟获取一次数据，提醒用户有无新消息
     NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:60.0 target:self selector:@selector(messageAlert) userInfo:nil repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
     
@@ -37,59 +35,34 @@
 
 
 -(void)messageAlert{
-    
-    NSString *urlString=[NSString stringWithFormat:@"http://argo.sysu.edu.cn/ajax/mail/check"];
-    NSURL *url=[NSURL URLWithString:urlString];
-    NSURLRequest *request=[NSURLRequest requestWithURL:url];
-    //NSLog(urlString);
-    AFHTTPRequestOperation *operation=[[AFHTTPRequestOperation alloc]initWithRequest:request];
-    [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"success------------------------>%@",operation.responseObject);
-        NSString *requestTmp = [NSString stringWithString:operation.responseString];
-        NSData *resData=[[NSData alloc]initWithData:[requestTmp dataUsingEncoding:NSUTF8StringEncoding]];
-        //系统自带JSON解析：
-        NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:resData options:NSJSONReadingMutableLeaves error:nil];
-        //NSLog(@"resultDict------------------>%@",resultDict);
-        
+    if (![Config Instance].isLogin) {
+        // return without trying in case that User is not login.
+        return;
+    }
+    [[DataManager manager] checkMail:^(NSDictionary *resultDict) {
         //data是一个字符串，第一个字符如果是1，表示有新的邮件;第二个字符如果是1，表示有新的消息;第三个字符如果是1，表示收藏夹的看板有新的帖子
-        
-        int success=[[resultDict objectForKey:@"success"]intValue];
-        if (success==1) {
-            int data=[[resultDict objectForKey:@"data"]intValue];
-            if (data==1) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMailAlert" object:nil];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMessageAlert" object:nil];
-                
-            }else if (data==10){
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMailAlert" object:nil];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMessageAlert" object:nil];
-            }else if (data==11){
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMailAlert" object:nil];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMessageAlert" object:nil];
-            }else if (data==100){
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMailAlert" object:nil];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMessageAlert" object:nil];
-            }else if (data==101){
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMailAlert" object:nil];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMessageAlert" object:nil];
-                
-            }else if (data==111){
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMessageAlert" object:nil];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMailAlert" object:nil];
-            }
-            
+        unsigned long data= strtoul([ [resultDict objectForKey:@"data"] UTF8String], NULL, 2);
+        if (data & 0b1) {
+            // Notify favourate. Ignore currently.
+        }
+        if (data & 0b10) {
+            // Notify new message
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMessageAlert" object:nil];
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMessageAlert" object:nil];
         }
         
-    } failure:nil];
-    [operation start];
-    
-    
+        if (data & 0b100) {
+            // Notify new mail
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMailAlert" object:nil];
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMailAlert" object:nil];
+        }
+    } failure:^(NSString *data, NSError *error) {
+        NSLog(@"Failed when checking mail. Reason=%@", error);
+    }];
     
 }
-
-
-
-
 
 -(void)haveNewMailAlert{
     //_mail.text=@"信箱（有新信件）";
@@ -109,7 +82,5 @@
 -(void)noNewMessageAlert{
     _message.text=@"提醒";
 }
-
-
 
 @end

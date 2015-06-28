@@ -26,9 +26,12 @@ NSString * const ARGO_POSTS_PER_TOPIC_URL       = @"http://argo.sysu.edu.cn/ajax
 
 // A single Post get by boardname and filename.
 NSString * const ARGO_POST_GET_URL              = @"http://argo.sysu.edu.cn/ajax/post/get";
+
 // Delete specific post.
 NSString * const ARGO_POST_DELETE_URL           = @"http://argo.sysu.edu.cn/ajax/post/del";
 
+// Check if there is new mail/alert.
+NSString * const ARGO_MAIL_CHECK_URL            = @"http://argo.sysu.edu.cn/ajax/mail/check";
 
 NSString * const MSG_NETWORK_FAILURE            = @"MSG_NETWORK_FAILURE";
 NSString * const MSG_BUSINESS_FAILURE           = @"MSG_BUSINESS_FAILURE";
@@ -167,13 +170,22 @@ DataManager *manager;
     }];
 
 }
+
+- (void) checkMail:(void (^)(NSDictionary *resultDict))success
+           failure:(void (^)(NSString *data, NSError *error))failure {
+    NSDictionary *param=[[NSDictionary alloc]init];
+    [self getData:ARGO_MAIL_CHECK_URL withParam:param success:success failure:failure];
+}
+
+
 - (int)getHighWaterMark:(NSString *) boardName andFile: (NSString *) fileName {
     return [[[NSUserDefaults standardUserDefaults] objectForKey:[boardName stringByAppendingString:fileName]] intValue];
 }
 
 - (void)setHighWaterMark:(NSString *) boardName andFile: (NSString *) fileName mark:(int) highWaterMark {
-    if (highWaterMark > [self getHighWaterMark:boardName andFile:fileName])
+    if (highWaterMark > [self getHighWaterMark:boardName andFile:fileName]) {
         [[NSUserDefaults standardUserDefaults] setObject:@(highWaterMark) forKey:[boardName stringByAppendingString:fileName]];
+    }
 }
 
 - (void) removeCacheByKey:(NSString*) cacheKey {

@@ -10,7 +10,7 @@
 
 @implementation LoadingCell
 
-@synthesize normalStr,loadingStr,startViewStr,cell,label;
+@synthesize normalStr,loadingStr,startViewStr,cell,label, indicator;
 
 
 -(id)initWithNormalStr:(NSString*)_normalStr andLoadingStr:(NSString*)_loadingStr andStartViewStr:(NSString*)_startViewStr{

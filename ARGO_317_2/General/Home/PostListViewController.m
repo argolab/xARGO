@@ -8,7 +8,7 @@
 // This contains a 3-stages lazy load:
 // 1. No data.
 // 2. List ready.
-// 3. Rendering cells in page.
+// 3. Rendering cells by pages.
 // 4. Scroll to the high water mark
 
 #import "PostListViewController.h"
