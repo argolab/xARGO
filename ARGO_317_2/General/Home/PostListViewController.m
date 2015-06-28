@@ -252,16 +252,12 @@ static NSString *CellIdentifier = @"postCell";
     NSString *rawcontentStr=[postList[row] objectForKey:@"rawcontent"];
     
     // 计算出高度
-    NSDictionary *attribute=@{NSFontAttributeName: [UIFont systemFontOfSize:14]};
-    CGSize size=[rawcontentStr boundingRectWithSize:CGSizeMake(290,CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin attributes:attribute context:nil].size;
+    CGSize size= [rawcontentStr sizeWithAttributes: @{NSFontAttributeName: [UIFont systemFontOfSize:14]}];
     CGFloat height=size.height;
+    NSLog(@"height=%f", size.height);
     
-    //释放内存：
-    rawcontentStr=nil;
-    attribute=nil;
-    
-    // textView上下constraint皆为25，合计50.
-    return height + 50;
+    // textView上下constraint皆为25，此外UITextView上下padding各8，合计66.
+    return height + 66;
 }
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
