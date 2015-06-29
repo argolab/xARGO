@@ -37,6 +37,11 @@
                   success:(void (^)(NSDictionary *resultDict))success
                   failure:(void (^)(NSString *data, NSError *error))failure;
 
+- (void) getTopicByBoardName:(NSString *) boardName
+                 andStartNum:(NSInteger) startNum
+                     success:(void (^)(NSDictionary *resultDict))success
+                     failure:(void (^)(NSString *data, NSError *error))failure;
+
 - (void) checkMail:(void (^)(NSDictionary *resultDict))success
            failure:(void (^)(NSString *data, NSError *error))failure;
 

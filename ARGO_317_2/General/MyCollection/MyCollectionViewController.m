@@ -239,11 +239,11 @@
         if (favariteBoards&&[favariteBoards count]) {
             destViewController.boardName=[favariteBoards[indexPath.row]objectForKey:@"boardname"];
             
-            destViewController.boardTitle=[NSString stringWithFormat:@"%@",[favariteBoards[indexPath.row] objectForKey:@"title"]];
+            destViewController.theTitle=[NSString stringWithFormat:@"%@",[favariteBoards[indexPath.row] objectForKey:@"title"]];
             //destViewController.navigationItem.title=[favariteBoards[indexPath.row]objectForKey:@"title"];
         }else{
             destViewController.boardName=@"";
-            destViewController.boardTitle=@"请退回重新进入";
+            destViewController.theTitle=@"请退回重新进入";
         }
         
         destViewController=nil;//important!否则如果持续使用会导致内存被塞满

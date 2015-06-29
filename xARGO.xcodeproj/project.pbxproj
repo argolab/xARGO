@@ -119,6 +119,7 @@
 		B0ED2EBD18D83FA900D9F014 /* AllBoardListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B0ED2EBC18D83FA900D9F014 /* AllBoardListViewController.m */; };
 		B0ED504A19026E8B0008E5D7 /* arrow_down_black_16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = B0ED504819026E8B0008E5D7 /* arrow_down_black_16x16.png */; };
 		B0ED504B19026E8B0008E5D7 /* arrowdown_black_32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = B0ED504919026E8B0008E5D7 /* arrowdown_black_32x32.png */; };
+		CD15C9351B3FFC420073DD91 /* PagableTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD15C9341B3FFC420073DD91 /* PagableTableViewController.m */; };
 		CD9B561F1A1F3F120083F22A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CD9B561E1A1F3F120083F22A /* main.m */; };
 		CDA8519D1A29804D00BD3C19 /* DataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CDA8519C1A29804D00BD3C19 /* DataManager.m */; };
 		CDA851A21A2A3FFB00BD3C19 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CDA851A01A2A3FFB00BD3C19 /* Localizable.strings */; };
@@ -332,6 +333,8 @@
 		B0ED2EBC18D83FA900D9F014 /* AllBoardListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AllBoardListViewController.m; sourceTree = "<group>"; };
 		B0ED504819026E8B0008E5D7 /* arrow_down_black_16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow_down_black_16x16.png; sourceTree = "<group>"; };
 		B0ED504919026E8B0008E5D7 /* arrowdown_black_32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrowdown_black_32x32.png; sourceTree = "<group>"; };
+		CD15C9331B3FFC420073DD91 /* PagableTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PagableTableViewController.h; sourceTree = "<group>"; };
+		CD15C9341B3FFC420073DD91 /* PagableTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PagableTableViewController.m; sourceTree = "<group>"; };
 		CD9B561E1A1F3F120083F22A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		CDA8519B1A29804D00BD3C19 /* DataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataManager.h; sourceTree = "<group>"; };
 		CDA8519C1A29804D00BD3C19 /* DataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataManager.m; sourceTree = "<group>"; };
@@ -428,6 +431,8 @@
 			children = (
 				B0D4233918F1949E00DE9A8E /* LoadingCell.h */,
 				B0D4233A18F1949E00DE9A8E /* LoadingCell.m */,
+				CD15C9331B3FFC420073DD91 /* PagableTableViewController.h */,
+				CD15C9341B3FFC420073DD91 /* PagableTableViewController.m */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -946,6 +951,7 @@
 				B0C3D87A18D6F421004B5F9F /* ARGOAppDelegate.m in Sources */,
 				B004D4AA19149E390023667A /* SDWebImageDownloaderOperation.m in Sources */,
 				B0E59F7618ED587B00FC844D /* SoftwareCatalog.m in Sources */,
+				CD15C9351B3FFC420073DD91 /* PagableTableViewController.m in Sources */,
 				B01C24521904FD6C00408320 /* AboutNavViewController.m in Sources */,
 				B0CD013419F92C2A00F46F32 /* AFURLResponseSerialization.m in Sources */,
 				B005E0941907969400CD8D88 /* DataCache.m in Sources */,

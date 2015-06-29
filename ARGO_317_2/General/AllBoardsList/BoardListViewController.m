@@ -61,7 +61,6 @@
     refresh.attributedTitle=[[NSAttributedString alloc]initWithString:@"下拉刷新"];
     [refresh addTarget:self action:@selector(refreshView:) forControlEvents:UIControlEventValueChanged];
     self.refreshControl = refresh;
-    
 }
 
 
@@ -158,7 +157,7 @@
 
 #pragma mark - Navigation
 //传递数据（boardname)至帖子列表
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender 
 {
     if ([segue.identifier isEqualToString:@"showPostListFromBoardList"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
@@ -166,7 +165,7 @@
         TopicListViewController *destViewController = segue.destinationViewController;
         destViewController.boardName=[[boards objectAtIndex:indexPath.row]objectForKey:@"filename"];
 
-        destViewController.boardTitle=[NSString stringWithFormat:@"%@",[boards[indexPath.row]objectForKey:@"title"]];
+        destViewController.theTitle = [NSString stringWithFormat:@"%@",[boards[indexPath.row]objectForKey:@"title"]];
         // NSLog(@"%@",[boards description]);
 
         destViewController=nil;//important!否则如果持续使用会导致内存被塞满

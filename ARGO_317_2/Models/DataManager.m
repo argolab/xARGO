@@ -27,6 +27,9 @@ NSString * const ARGO_POSTS_PER_TOPIC_URL       = @"http://argo.sysu.edu.cn/ajax
 // A single Post get by boardname and filename.
 NSString * const ARGO_POST_GET_URL              = @"http://argo.sysu.edu.cn/ajax/post/get";
 
+// List of topics by boardname.
+NSString * const ARGO_TOPIC_LIST_BY_BOARD_URL   = @"http://argo.sysu.edu.cn/ajax/post/list";
+
 // Delete specific post.
 NSString * const ARGO_POST_DELETE_URL           = @"http://argo.sysu.edu.cn/ajax/post/del";
 
@@ -139,6 +142,14 @@ DataManager *manager;
                    failure:(void (^)(NSString *data, NSError *error))failure {
     NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName}];
     [self getData:ARGO_BOARD_GET_URL withParam:param success:success failure:failure];
+}
+
+- (void) getTopicByBoardName:(NSString *) boardName
+                 andStartNum:(NSInteger) startNum
+                     success:(void (^)(NSDictionary *resultDict))success
+                     failure:(void (^)(NSString *data, NSError *error))failure {
+    NSMutableDictionary *param=[[NSMutableDictionary alloc]initWithDictionary:@{@"boardname":boardName, @"type":@"topic",@"start":[NSNumber numberWithInteger:startNum]}];
+    [self getData:ARGO_TOPIC_LIST_BY_BOARD_URL withParam:param success:success failure:failure];
 }
 
 - (void) getPostsPerTopicByBoardName:(NSString *) boardName
