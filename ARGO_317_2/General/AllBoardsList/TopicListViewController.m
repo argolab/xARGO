@@ -43,11 +43,12 @@
 
 
 -(void) loadNextPage {
-    if(isDataLoading) {
+    if(isDataLoading || currentPage * pageSize >= totalNum) {
+        [self didLoadNextPage];
         return;
     }
-    isDataLoading = YES;
     NSInteger startNum = totalNum - (currentPage + 1) * pageSize - 1;
+    isDataLoading = YES;
     [[DataManager manager] getTopicByBoardName:self.boardName andStartNum:startNum success:^(NSDictionary *resultDict) {
         NSArray* data=[resultDict objectForKey:@"data"];
         @synchronized(dataList) {
@@ -58,13 +59,14 @@
         isDataLoading=NO;
         [self.tableView reloadData];
         currentPage++;
-        [loadingCell normal];
         //记录下拉刷新时间：
         lastUpdated=[NSString stringWithFormat:@"上次更新时间 %@",
                      [dateFormatter stringFromDate:[NSDate date]]];
+        [self didLoadNextPage];
     } failure:^(NSString *data, NSError *error) {
         UIAlertView *av = [[UIAlertView alloc]initWithTitle:@"error" message:@"请重新登录后再试试" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [av show];
+        [self didLoadNextPage];
     }];
 }
 //返回行高

@@ -42,6 +42,16 @@
     [loadingCell loading];
 }
 
+-(void) didLoadNextPage {
+    [loadingCell normal];
+    if (currentPage*pageSize < totalNum) {
+        loadingCell.label.text = [NSString stringWithFormat:@"下面还有%lu项，轻轻上拉继续看",totalNum - currentPage*pageSize];
+    } else {
+        loadingCell.label.text = NSLocalizedString(@"No more items", @"");
+    }
+
+}
+
 - (void)initRefreshController {
     self.refreshControl.tintColor=[UIColor lightGrayColor];
     self.refreshControl.attributedTitle=[[NSAttributedString alloc]initWithString:@"下拉刷新"];

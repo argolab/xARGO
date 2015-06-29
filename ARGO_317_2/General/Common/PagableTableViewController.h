@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 490021684@qq.com. All rights reserved.
 //
 #define REFRESH_HEADER_HEIGHT 52.0f
+#define pageSize 20
 
 #import <UIKit/UIKit.h>
 #import "LoadingCell.h"
@@ -31,6 +32,8 @@
 // point-cut methods
 - (void)willLoadNextPage;
 // point-cut methods
+- (void)didLoadNextPage;
+
 - (void)clearAndReload;
 
 // actual loading logic, which should be override by sub-class

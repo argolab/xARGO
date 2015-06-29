@@ -12,8 +12,7 @@
 
 @synthesize normalStr,loadingStr,startViewStr,cell,label, indicator;
 
-
--(id)initWithNormalStr:(NSString*)_normalStr andLoadingStr:(NSString*)_loadingStr andStartViewStr:(NSString*)_startViewStr{
+-(id)initWithNormalStr:(NSString*)_normalStr andLoadingStr:(NSString*)_loadingStr andStartViewStr:(NSString*)_startViewStr {
     
     startViewStr = _startViewStr;
     loadingStr = _loadingStr;
@@ -23,12 +22,11 @@
     
     //label设置
     
-    label = [[UILabel alloc]initWithFrame:CGRectMake(120, 10, 200, 20)];
+    label = [[UILabel alloc]initWithFrame:CGRectMake(100, 10, 240, 20)];
     
     label.center = cell.center;
     [label setTextAlignment:NSTextAlignmentCenter];
     label.font=[UIFont fontWithName:@"Arial" size:14];
-    
     
     //indicator设置
     indicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
@@ -40,8 +38,6 @@
     
     [self normal];
     return self;
-
-     
 }
 
 //正在加载数据中状态
@@ -61,10 +57,5 @@
     [indicator stopAnimating];
      [label setText:normalStr];
 }
-
-
-
-
-
 
 @end

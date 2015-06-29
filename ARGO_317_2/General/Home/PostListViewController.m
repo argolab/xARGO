@@ -371,7 +371,6 @@ static NSString *CellIdentifier = @"postCell";
             addPostViewController.articleid=@"";
             addPostViewController.viewTitleStr=@"出错了，请退回重新进入";
         }
-        addPostViewController=nil;
     }
     if ([segue.identifier isEqualToString:@"showUserInfo"]) {
         UserQueryViewController *userQueryViewController=segue.destinationViewController;
@@ -382,7 +381,6 @@ static NSString *CellIdentifier = @"postCell";
             userQueryViewController.userid=@"";
             userQueryViewController.navigationItem.title=@"出错了，请退回重新进入";
         }
-        userQueryViewController=nil;
     }
     
     if ([segue.identifier isEqualToString:@"showPicture"]) {
@@ -395,12 +393,7 @@ static NSString *CellIdentifier = @"postCell";
             attachPictureViewController.fileTimeStr=@"";
             attachPictureViewController.navigationItem.title=@"出错了，请退回重新进入";
         }
-        attachPictureViewController=nil;
     }
-    
-    btn=nil;
-    view=nil;
-    indexPath=nil;
 }
 
 - (NSString*) formatReplyingTitle:(NSString*) originalTitle {

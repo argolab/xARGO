@@ -5,8 +5,6 @@
 //  Created by 490021684@qq.com on 14-3-27.
 //  Copyright (c) 2014年 490021684@qq.com. All rights reserved.
 //
-#define REFRESH_HEADER_HEIGHT 52.0f
-#define pageSize 20
 
 #import <UIKit/UIKit.h>
 #import "LoadingCell.h"
