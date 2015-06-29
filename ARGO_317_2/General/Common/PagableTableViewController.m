@@ -53,16 +53,20 @@
 }
 
 - (void)initRefreshController {
-    self.refreshControl.tintColor=[UIColor lightGrayColor];
-    self.refreshControl.attributedTitle=[[NSAttributedString alloc]initWithString:@"下拉刷新"];
-    [self.refreshControl addTarget:self action:@selector(refreshView:) forControlEvents:UIControlEventValueChanged];
+    refreshControl = [[UIRefreshControl alloc] init];
+    refreshControl.tintColor=[UIColor lightGrayColor];
+    refreshControl.attributedTitle=[[NSAttributedString alloc]initWithString:@"下拉刷新"];
+    [refreshControl addTarget:self action:@selector(refreshView:) forControlEvents:UIControlEventValueChanged];
+    [self.tableView addSubview:refreshControl];
 }
 
 //下拉刷新调用的方法
 -(void)refreshView:(UIRefreshControl *)refresh {
     if (refresh.refreshing) {
         [refresh endRefreshing];
-        [self clearAndReload];
+        if (!isDataLoading) {
+            [self clearAndReload];
+        }
         //页数重新定位在最前面,清空数组
     }
 }

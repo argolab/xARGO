@@ -20,6 +20,7 @@
     NSInteger totalNum;
     NSInteger currentPage;
     bool isDataLoading;
+    UIRefreshControl* refreshControl;
 }
 
 @property (nonatomic, strong) NSString *boardName;

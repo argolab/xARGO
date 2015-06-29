@@ -97,7 +97,6 @@
     // 获取total_topicNum参数
     [[DataManager manager] getBoardByBoardName:self.boardName success:^(NSDictionary *data){
         NSLog(@"Dictionary: %@", [data description]);
-        
         totalNum=[[[data objectForKey:@"data"] objectForKey:@"total_topic"]integerValue];
         [self didLoadTotalNum];
     } failure: ^(NSString *data, NSError *error){
