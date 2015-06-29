@@ -109,6 +109,7 @@ static NSString *CellIdentifier = @"postCell";
 //下拉刷新调用的方法
 -(void)refreshView:(UIRefreshControl *)refresh {
     if (refresh.refreshing) {
+        [refresh endRefreshing];
         refresh.attributedTitle = [[NSAttributedString alloc] initWithString:lastUpdated];
         [self clear];
         [self initTopicList];
@@ -146,7 +147,9 @@ static NSString *CellIdentifier = @"postCell";
 
     NSDictionary *post = (self.postList)[indexPath.row];
     [self composite:cell at:indexPath with:post];
-    [[DataManager manager] setHighWaterMark:boardName andFile:postTopicList[0] mark:(int)indexPath.row];
+    if ([postTopicList count] > 0 ) {
+        [[DataManager manager] setHighWaterMark:boardName andFile:postTopicList[0] mark:(int)indexPath.row];
+    }
     //NSLog(@"Returning cell=%@",cell);
     return cell;
 }
@@ -223,9 +226,21 @@ static NSString *CellIdentifier = @"postCell";
     UILabel* hintLabel = ((UILabel *)[cell.contentView viewWithTag:hintTag]);
     if (indexPath.row == hintIndex) {
         [hintLabel setText: hintText];
+        [self setContraintFor:hintLabel height:17];
         [hintLabel setHidden:NO];
     } else {
+        [hintLabel setText:@""];
+        [self setContraintFor:hintLabel height:0];
         [hintLabel setHidden:YES];
+    }
+}
+
+-(void) setContraintFor:(UIView*) view height:(CGFloat) height {
+    for (NSInteger i = 0; i < [view.constraints count]; ++i) {
+        NSLayoutConstraint* constraint = (NSLayoutConstraint*)view.constraints[i];
+        if (constraint.firstAttribute == NSLayoutAttributeHeight) {
+            constraint.constant = height;
+        }
     }
 }
 
