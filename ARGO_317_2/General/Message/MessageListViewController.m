@@ -21,9 +21,7 @@
     [super viewDidLoad];
     
     //通知取消“新消息通知”
-    //[[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMailAlert" object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"noNewMessageAlert" object:nil];
-    //[[NSNotificationCenter defaultCenter] postNotificationName:@"haveNewMessageAlert" object:nil];
     
     //初始化参数：
     currPageStartNum=0;//初始化一个较大参数

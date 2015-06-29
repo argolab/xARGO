@@ -23,6 +23,7 @@
 #define rawcontentTag   3
 #define floorTag        4
 #define hasPictureTag   5
+#define hintTag         6
 
 static int pageSize = 10;
 
@@ -31,7 +32,7 @@ static NSString *CellIdentifier = @"postCell";
 @implementation PostListViewController {
     int currentPage;
 }
-@synthesize boardName,fileName;
+@synthesize boardName,fileName,hintIndex,hintText;
 @synthesize postTopicList,postList;
 
 
@@ -64,7 +65,7 @@ static NSString *CellIdentifier = @"postCell";
     [[DataManager manager] getPostsPerTopicByBoardName:boardName andFile:fileName success:^(NSDictionary *resultDict) {
         //NSLog(@"On getting topic successfully.");
         NSArray *data=[resultDict objectForKey:@"data"];
-        //NSLog(@"Dictionary: %@", [data description]);
+        NSLog(@"Dictionary: %@", [data description]);
         postList = [NSMutableArray arrayWithCapacity:[data count]];
         for (int i=0; i<[data count]; i++) {
             if ([data objectAtIndex:i]) {
@@ -72,7 +73,15 @@ static NSString *CellIdentifier = @"postCell";
                 [postTopicList addObject:[data objectAtIndex:i]];
             }
         }
-        [self loadUntilHighWaterMark];
+        // if fileName == topic[0], it's from topicList, else it's from message reminder.
+        if ([fileName isEqualToString:postTopicList[0]]) {
+            hintIndex = [[DataManager manager] getHighWaterMark:boardName andFile:postTopicList[0]];
+            hintText=@"上次读到这里";
+        } else {
+            hintIndex = [postTopicList indexOfObject:fileName];
+            hintText=@"您在此贴被提到";
+        }
+        [self loadUntilHintCell];
     } failure:^(NSString *data, NSError *error) {
         // failed?
         NSLog(@"Loading failed.");
@@ -85,11 +94,10 @@ static NSString *CellIdentifier = @"postCell";
      ];
 }
 
--(void) loadUntilHighWaterMark {
+-(void) loadUntilHintCell {
     [loadingCell loading];
-    int highWaterMark = [[DataManager manager] getHighWaterMark:boardName andFile:fileName];
-    [self fetchInBatch:0 numberOfPages:highWaterMark/pageSize + 1 didFinished:^{
-        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:[[DataManager manager] getHighWaterMark:boardName andFile:fileName] inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:NO];
+    [self fetchInBatch:0 numberOfPages:hintIndex/pageSize + 1 didFinished:^{
+        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:hintIndex inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:NO];
     }];
 }
 
@@ -138,7 +146,7 @@ static NSString *CellIdentifier = @"postCell";
 
     NSDictionary *post = (self.postList)[indexPath.row];
     [self composite:cell at:indexPath with:post];
-    [[DataManager manager] setHighWaterMark:boardName andFile:fileName mark:(int)indexPath.row];
+    [[DataManager manager] setHighWaterMark:boardName andFile:postTopicList[0] mark:(int)indexPath.row];
     //NSLog(@"Returning cell=%@",cell);
     return cell;
 }
@@ -208,11 +216,17 @@ static NSString *CellIdentifier = @"postCell";
         }
     }
     
-    ((UILabel *)[cell.contentView viewWithTag:authorTag]).text=authorStr;
+    [((UIButton *)[cell.contentView viewWithTag:authorTag]) setTitle:authorStr forState:UIControlStateNormal];
     ((UILabel *)[cell.contentView viewWithTag:post_timeTag]).text=post_timeStr;
     ((UITextView *)[cell.contentView viewWithTag:rawcontentTag]).text=rawcontentStr;
     ((UILabel *)[cell.contentView viewWithTag:floorTag]).text=floorStr;
     ((UIButton *)[cell.contentView viewWithTag:hasPictureTag]).hidden=!hasPicture;
+    
+    if (indexPath.row == hintIndex) {
+        UILabel* hintLabel = ((UILabel *)[cell.contentView viewWithTag:hintTag]);
+        [hintLabel setText: hintText];
+        [hintLabel addConstraint:[NSLayoutConstraint constraintWithItem:hintLabel attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:18]];
+    }
 }
 
 //将时间戳转为时间,然后再转为可理解的字符串
@@ -257,6 +271,7 @@ static NSString *CellIdentifier = @"postCell";
     NSLog(@"height=%f", size.height);
     
     // textView上下constraint皆为25，此外UITextView上下padding各8，合计66.
+    // TODO:使用autoLayout后66不准了，需要重新计算。
     return height + 66;
 }
 

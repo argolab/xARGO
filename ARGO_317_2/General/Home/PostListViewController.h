@@ -11,8 +11,7 @@
 #import "LoadingCell.h"
 #import "MBProgressHUD.h"
 
-@interface PostListViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource,MBProgressHUDDelegate>
-{
+@interface PostListViewController : UITableViewController<UITableViewDelegate,UITableViewDataSource,MBProgressHUDDelegate> {
     NSString *boardName;
     NSString *fileName;
     LoadingCell *loadingCell;
@@ -30,24 +29,7 @@
 @property (nonatomic, strong) NSString *fileName;
 @property (nonatomic, strong) NSMutableArray *postTopicList;//里面的元素是filename字符串
 @property (nonatomic, strong) NSMutableArray *postList;
-
-//-(void)loadData;
-//
-////先获取postTopicList，再调用fetchPostFeed，使用循环集合同主题所有帖子内容
-//-(void)fetchPostWithBoardName:(NSString *)boardname andFilename:(NSString *)filename;
-////-(void)fechiPostTopicListWithBoradName:(NSString *)boardname andFilename:(NSString *)filename;
-//
-//
-////获取单个帖子的内容postFeed
-//-(void)fetchPostFeedWithBoardName:(NSString *)boardname andFileName:(NSString *)filename;
-//
-//
-////上拉记载更多帖子内容
-//-(void)loadMorePostFeed;
-//
-////如果是来自提醒
-//-(void)fetchMessageDetail;
-
-
+@property (nonatomic, strong) NSString *hintText;
+@property (nonatomic) NSInteger hintIndex;
 
 @end
