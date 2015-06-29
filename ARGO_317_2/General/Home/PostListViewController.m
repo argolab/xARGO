@@ -25,7 +25,7 @@
 #define hasPictureTag   5
 #define hintTag         6
 
-static int pageSize = 10;
+static NSInteger pageSize = 10;
 
 static NSString *CellIdentifier = @"postCell";
 
@@ -96,7 +96,7 @@ static NSString *CellIdentifier = @"postCell";
 
 -(void) loadUntilHintCell {
     [loadingCell loading];
-    [self fetchInBatch:0 numberOfPages:hintIndex/pageSize + 1 didFinished:^{
+    [self fetchInBatch:0 numberOfPages:(hintIndex/pageSize + 1) didFinished:^{
         [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:hintIndex inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:NO];
     }];
 }
@@ -151,18 +151,18 @@ static NSString *CellIdentifier = @"postCell";
     return cell;
 }
 
--(void) fetchInBatch:(int) from numberOfPages:(int) num didFinished:(void (^) ())didFinished {
+-(void) fetchInBatch:(NSInteger) from numberOfPages:(NSInteger) num didFinished:(void (^) ())didFinished {
     assert(postTopicList.count > 0);
     assert(num >= 0);
     __block int counter = 0;
-    int threshold = MIN(num*pageSize, (int)postTopicList.count - from);
+    NSInteger threshold = MIN(num*pageSize, postTopicList.count - from);
     if (threshold < 0) {
         // No more data now.
         lastUpdated=[NSString stringWithFormat:@"更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
         loadingCell.label.text=[NSString stringWithFormat:@"%@",lastUpdated];
     }
     //NSLog(@"Going to fetch next %d from %d", count, from);
-    for (int i = from; i < from + threshold; ++i) {
+    for (NSInteger i = from; i < from + threshold; ++i) {
         //NSLog(@"Going to fetch :%@", [postTopicList objectAtIndex:i]);
         [[DataManager manager] getPostByBoard:boardName andFile:[postTopicList objectAtIndex:i] forceReload:NO success:^(NSDictionary *resultDict) {
             //NSLog(@"On fetching successfully:%@",[[resultDict objectForKey:@"data"] objectForKey:@"filename"]);
@@ -207,12 +207,10 @@ static NSString *CellIdentifier = @"postCell";
         rawcontentStr=[NSString stringWithFormat:@"%@",[data objectForKey:@"rawcontent"]];
         
         //如果有附图，则赋值给isPicture;
-        if ([data objectForKey:@"ah"]&&[[data objectForKey:@"ah"]count]) {
-            if ([[data objectForKey:@"ah"]isKindOfClass:[NSDictionary class]]) {
-                NSDictionary *ah=[data objectForKey:@"ah"];
-                hasPicture=[[ah objectForKey:@"is_picture"]integerValue];
-                ah=nil;
-            }
+        if ([data objectForKey:@"ah"] && [[data objectForKey:@"ah"]isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *ah=[data objectForKey:@"ah"];
+            hasPicture=[[ah objectForKey:@"is_picture"]integerValue];
+            ah=nil;
         }
     }
     
@@ -221,11 +219,13 @@ static NSString *CellIdentifier = @"postCell";
     ((UITextView *)[cell.contentView viewWithTag:rawcontentTag]).text=rawcontentStr;
     ((UILabel *)[cell.contentView viewWithTag:floorTag]).text=floorStr;
     ((UIButton *)[cell.contentView viewWithTag:hasPictureTag]).hidden=!hasPicture;
-    
+
+    UILabel* hintLabel = ((UILabel *)[cell.contentView viewWithTag:hintTag]);
     if (indexPath.row == hintIndex) {
-        UILabel* hintLabel = ((UILabel *)[cell.contentView viewWithTag:hintTag]);
         [hintLabel setText: hintText];
-        [hintLabel addConstraint:[NSLayoutConstraint constraintWithItem:hintLabel attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:18]];
+        [hintLabel setHidden:NO];
+    } else {
+        [hintLabel setHidden:YES];
     }
 }
 
@@ -247,7 +247,6 @@ static NSString *CellIdentifier = @"postCell";
             }
         }
     }
-    
 }
 
 //返回行高

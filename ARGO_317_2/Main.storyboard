@@ -1529,6 +1529,7 @@
                                             <rect key="frame" x="-18" y="-2" width="356" height="17"/>
                                             <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
+                                                <constraint firstAttribute="height" constant="17" id="E2t-FI-Lre"/>
                                                 <constraint firstAttribute="width" constant="356" id="Kb8-OC-61t"/>
                                             </constraints>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
