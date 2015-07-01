@@ -25,9 +25,6 @@
 -(void)normal; //"加载更多"
 -(void)startView; //"数据已全部加载完成"
 -(void)loading; //"数据加载中"
-
-
-
-
+-(void)updateProgress:(NSString*) progress;//更新进度
 
 @end

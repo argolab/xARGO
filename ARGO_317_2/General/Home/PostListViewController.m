@@ -47,16 +47,15 @@ static NSString *CellIdentifier = @"postCell";
     dateFormatter.dateFormat=@"yyyy/MM/dd, HH:mm";
     loadingCell=[[LoadingCell alloc]initWithNormalStr:@"上拉刷新" andLoadingStr:@"数据加载中.." andStartViewStr:@"可下拉刷新.."];
     [loadingCell loading];
-    
+    lastUpdated = [NSString stringWithFormat:@"更新时间 %@", [dateFormatter stringFromDate:[NSDate date]]];
     currentPage = 0;
     // Load list asynchously.
     [self initTopicList];
-    UIRefreshControl *refresh=[[UIRefreshControl alloc]init];
+    UIRefreshControl *refresh = [[UIRefreshControl alloc]init];
     refresh.tintColor=[UIColor lightGrayColor];
     refresh.attributedTitle=[[NSAttributedString alloc]initWithString:@"下拉刷新"];
     [refresh addTarget:self action:@selector(refreshView:) forControlEvents:UIControlEventValueChanged];
     self.refreshControl = refresh;
-    
 }
 
 -(void) initTopicList {
@@ -90,8 +89,7 @@ static NSString *CellIdentifier = @"postCell";
         loadingCell.label.text = [NSString stringWithFormat:@"%@%@",NSLocalizedString(@"Reason:", @""), errorMsg];
         UIAlertView *av = [[UIAlertView alloc]initWithTitle:NSLocalizedString(@"Error",@"") message: [NSString stringWithFormat:@"%@%@",NSLocalizedString(@"Reason:", @""), errorMsg] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [av show];
-    }
-     ];
+    }];
 }
 
 -(void) loadUntilHintCell {
@@ -173,6 +171,7 @@ static NSString *CellIdentifier = @"postCell";
                 self.postList[i]=[resultDict objectForKey:@"data"];
             }
             ++counter;
+            [loadingCell updateProgress:[NSString stringWithFormat:@"数据加载中...还有%ld项", threshold - counter]];
             if(counter == threshold) {
                 currentPage+=num;
                 [loadingCell normal];
@@ -195,7 +194,7 @@ static NSString *CellIdentifier = @"postCell";
 
 - (void) composite:(UITableViewCell *) cell at:(NSIndexPath *) indexPath
               with:(NSDictionary *) data {
-    //NSLog(@"Compositing cell %@ at %@ with %@", cell, indexPath, data);
+    NSLog(@"Compositing cell %@ at %@ with %@", cell, indexPath, data);
     NSString *authorStr=@"loading...";
     NSString *post_timeStr=@"loading...";
     NSString *floorStr=[NSString stringWithFormat:@"#%ld",(long)indexPath.row+1];
@@ -277,16 +276,28 @@ static NSString *CellIdentifier = @"postCell";
 //计算行高
 -(CGFloat) getTheHeight:(NSInteger)row {
     // 显示的内容
-    NSString *rawcontentStr=[postList[row] objectForKey:@"rawcontent"];
+    NSString *rawcontentStr = [postList[row] objectForKey:@"rawcontent"];
     
-    // 计算出高度
-    CGSize size= [rawcontentStr sizeWithAttributes: @{NSFontAttributeName: [UIFont systemFontOfSize:14]}];
+    // 计算出文字高度
+    NSInteger width = [UIScreen mainScreen].applicationFrame.size.width - 16.0;
+    CGSize size = [rawcontentStr boundingRectWithSize:CGSizeMake(width, CGFLOAT_MAX)
+                                              options:NSStringDrawingUsesLineFragmentOrigin
+                                           attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:14]}
+                                              context:nil].size;
     CGFloat height=size.height;
-    NSLog(@"height=%f", size.height);
+    if ([[UIDevice currentDevice].systemVersion doubleValue] < 8.0) {
+        // hot fix for iOS 7.x
+        height += 16.702f;
+    }
+    NSLog(@"%@", rawcontentStr);
+    NSLog(@"cell=%ld, height=%f", (long)row, size.height);
     
-    // textView上下constraint皆为25，此外UITextView上下padding各8，合计66.
-    // TODO:使用autoLayout后66不准了，需要重新计算。
-    return height + 66;
+    // 84 = 17 + 6 + 18 + 17 - 5 + 8 + 8 + 15
+    if (row == hintIndex) {
+        return height + 84;
+    } else {
+        return height + 67;
+    }
 }
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {

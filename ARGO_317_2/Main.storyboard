@@ -1505,9 +1505,9 @@
                                             </connections>
                                         </button>
                                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" minimumZoomScale="0.0" maximumZoomScale="0.0" editable="NO" text="postContent" translatesAutoresizingMaskIntoConstraints="NO" id="tRB-SO-6Lh" userLabel="PostContent">
-                                            <rect key="frame" x="8" y="51" width="294" height="175.5"/>
+                                            <rect key="frame" x="8" y="51" width="304" height="175.5"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits" autocorrectionType="no"/>
                                             <dataDetectorType key="dataDetectorTypes" link="YES"/>
                                         </textView>
@@ -1537,7 +1537,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <button opaque="NO" tag="5000" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="A0H-xE-ucq">
-                                            <rect key="frame" x="254" y="17" width="40" height="40"/>
+                                            <rect key="frame" x="264" y="17" width="40" height="40"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="40" id="2Y6-FE-o7p"/>
                                                 <constraint firstAttribute="height" constant="40" id="QL2-Cx-cyw"/>
@@ -1552,8 +1552,8 @@
                                     </subviews>
                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     <constraints>
-                                        <constraint firstAttribute="trailingMargin" secondItem="A0H-xE-ucq" secondAttribute="trailing" constant="18" id="8Aa-ky-evZ"/>
                                         <constraint firstItem="kyt-Hm-3bw" firstAttribute="leading" secondItem="ph1-fT-gfS" secondAttribute="leadingMargin" constant="-26" id="9d4-4S-YDl"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="A0H-xE-ucq" secondAttribute="trailing" constant="8" id="DPw-mQ-iHX"/>
                                         <constraint firstItem="tRB-SO-6Lh" firstAttribute="top" secondItem="na5-i7-4v5" secondAttribute="bottom" constant="-5" id="Doc-Eu-VBh"/>
                                         <constraint firstItem="tRB-SO-6Lh" firstAttribute="leading" secondItem="ph1-fT-gfS" secondAttribute="leadingMargin" id="OHq-Ti-xkB"/>
                                         <constraint firstItem="riD-LD-fjq" firstAttribute="leading" secondItem="ph1-fT-gfS" secondAttribute="leadingMargin" constant="8" id="QWX-Cq-Vca"/>
@@ -1565,7 +1565,7 @@
                                         <constraint firstItem="JtO-fl-57X" firstAttribute="leading" secondItem="ph1-fT-gfS" secondAttribute="leadingMargin" constant="16" id="mpt-ux-f1S"/>
                                         <constraint firstItem="A0H-xE-ucq" firstAttribute="top" secondItem="kyt-Hm-3bw" secondAttribute="bottom" constant="2" id="q9R-2B-vlK"/>
                                         <constraint firstItem="kyt-Hm-3bw" firstAttribute="top" secondItem="ph1-fT-gfS" secondAttribute="topMargin" constant="-10" id="r1f-oW-fcg"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="tRB-SO-6Lh" secondAttribute="trailing" constant="10" id="vHH-nk-55l"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="tRB-SO-6Lh" secondAttribute="trailing" id="vHH-nk-55l"/>
                                         <constraint firstItem="rfl-AF-OQx" firstAttribute="top" secondItem="riD-LD-fjq" secondAttribute="bottom" id="xjM-dc-mjb"/>
                                         <constraint firstItem="riD-LD-fjq" firstAttribute="top" secondItem="kyt-Hm-3bw" secondAttribute="bottom" constant="6" id="zfQ-dH-7Z5"/>
                                     </constraints>

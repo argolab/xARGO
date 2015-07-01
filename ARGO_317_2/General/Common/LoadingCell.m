@@ -58,4 +58,8 @@
      [label setText:normalStr];
 }
 
+//更新进度
+-(void)updateProgress:(NSString*) progress {
+    [label setText:progress];
+}
 @end
